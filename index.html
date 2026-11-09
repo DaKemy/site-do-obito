@@ -3,94 +3,174 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Rinnegan Tattoo Club</title>
+    <title>Roleta da Fidelidade</title>
+    <meta
+      name="description"
+      content="Sistema de fidelização com roleta de descontos para clientes de tatuagem."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <header class="topbar">
       <div class="container nav">
-        <div class="brand">Rinnegan Tattoo Club</div>
-        <button class="ghost-button" id="showAdminBtn">Admin</button>
+        <div class="brand">
+          <span class="brand-mark">✦</span>
+          <span>Roleta da Fidelidade</span>
+        </div>
+        <nav class="menu">
+          <a href="#como-funciona">Como funciona</a>
+          <a href="#beneficios">Benefícios</a>
+          <a href="#fidelizar">Fidelizar</a>
+        </nav>
+        <a class="btn btn-primary" href="#cadastro">Quero participar</a>
       </div>
     </header>
 
-    <main class="container">
-      <section class="panel hero">
-        <div>
-          <span class="eyebrow">Fidelidade + Gamificação</span>
-          <h1>Cadastre-se e ganhe um giro na roleta Sharingan.</h1>
-          <p>
-            Cada cadastro traz 1 rodada, e a cada 3 tatuagens aprovadas o cliente ganha +1 giro.
-          </p>
-        </div>
-
-        <form id="registerForm" class="register-form">
-          <input name="name" placeholder="Nome" required />
-          <input name="whatsapp" placeholder="WhatsApp" required />
-          <button type="submit">Cadastrar</button>
-        </form>
-      </section>
-
-      <section class="grid-two">
-        <div class="panel wheel-panel">
-          <h2>Roleta Sharingan</h2>
-          <div class="wheel-wrap">
-            <div class="wheel-pointer"></div>
-            <div id="wheel" class="wheel">
-              <div class="segment segment-1"><span>5%</span></div>
-              <div class="segment segment-2"><span>10%</span></div>
-              <div class="segment segment-3"><span>15%</span></div>
-              <div class="segment segment-4"><span>20%</span></div>
-              <div class="segment segment-5"><span>30%</span></div>
-              <div class="segment segment-6"><span>40%</span></div>
+    <main>
+      <section class="hero">
+        <div class="container hero-grid">
+          <div class="hero-copy">
+            <span class="eyebrow">Fidelidade que valoriza o cliente</span>
+            <h1>Cadastre-se e ganhe um giro na nossa roleta exclusiva.</h1>
+            <p>
+              A cada cadastro, o cliente recebe uma chance de ganhar desconto
+              especial. E a cada 3 tatuagens realizadas, ganha mais 1 giro para
+              continuar acumulando vantagens.
+            </p>
+            <div class="hero-actions">
+              <a class="btn btn-primary" href="#cadastro">Participar agora</a>
+              <a class="btn btn-secondary" href="#como-funciona">Saiba mais</a>
+            </div>
+            <div class="stats">
+              <div>
+                <strong>+3</strong>
+                <span>Tatuagens = +1 giro</span>
+              </div>
+              <div>
+                <strong>1</strong>
+                <span>Giro no cadastro</span>
+              </div>
+              <div>
+                <strong>VIP</strong>
+                <span>Benefícios exclusivos</span>
+              </div>
             </div>
           </div>
-          <button id="spinBtn" class="primary-btn">Girar roleta</button>
-          <div id="resultBox" class="result-box">Nenhum giro realizado ainda.</div>
-        </div>
 
-        <div class="panel loyalty-panel">
-          <h2>9 Caixinhas</h2>
-          <div id="loyaltyGrid" class="loyalty-grid"></div>
-          <div id="loyaltyMeta" class="loyalty-meta">0/9 caixinhas preenchidas</div>
-        </div>
-      </section>
-
-      <section class="panel request-panel">
-        <h2>Enviar ideia / orçamento</h2>
-        <form id="ideaForm" class="idea-form" enctype="multipart/form-data">
-          <input name="customerId" placeholder="ID do cliente" required />
-          <input name="title" placeholder="Título da ideia" />
-          <input name="bodyPart" placeholder="Local do corpo" />
-          <input name="size" placeholder="Tamanho" />
-          <input type="file" name="referenceImage" accept="image/*" />
-          <input name="referenceImageUrl" placeholder="URL da imagem de referência" />
-          <textarea name="description" placeholder="Descreva a tatuagem desejada" required></textarea>
-          <button type="submit">Enviar ideia</button>
-        </form>
-      </section>
-
-      <section id="adminPanel" class="panel admin-panel hidden">
-        <div class="admin-header">
-          <h2>Painel administrativo</h2>
-          <button id="logoutAdminBtn" class="ghost-button small">Sair</button>
-        </div>
-
-        <form id="adminLoginForm" class="admin-login-form">
-          <input name="username" placeholder="Usuário" required />
-          <input name="password" type="password" placeholder="Senha" required />
-          <button type="submit">Entrar</button>
-        </form>
-
-        <div id="adminContent" class="admin-content hidden">
-          <div class="admin-actions">
-            <button id="loadAdminBtn" class="primary-btn">Carregar clientes</button>
+          <div class="wheel-card">
+            <div class="wheel-wrap">
+              <div class="wheel-shadow"></div>
+              <div class="wheel">
+                <div class="wheel-center">GO</div>
+                <span class="segment s1">5%</span>
+                <span class="segment s2">10%</span>
+                <span class="segment s3">15%</span>
+                <span class="segment s4">VIP</span>
+                <span class="segment s5">7%</span>
+                <span class="segment s6">12%</span>
+              </div>
+            </div>
+            <button class="spin-btn" id="spinButton">Girar roleta</button>
           </div>
-          <div id="adminTable" class="admin-table"></div>
+        </div>
+      </section>
+
+      <section id="como-funciona" class="section">
+        <div class="container">
+          <div class="section-header">
+            <span class="eyebrow dark">Como funciona</span>
+            <h2>Simples, divertido e feito para fidelizar</h2>
+          </div>
+
+          <div class="steps">
+            <article class="step-card">
+              <div class="step-number">01</div>
+              <h3>Cadastro</h3>
+              <p>O cliente se cadastra e ganha automaticamente 1 giro na roleta.</p>
+            </article>
+
+            <article class="step-card">
+              <div class="step-number">02</div>
+              <h3>Desconto</h3>
+              <p>Ao girar, ele pode ganhar uma porcentagem especial de desconto.</p>
+            </article>
+
+            <article class="step-card">
+              <div class="step-number">03</div>
+              <h3>Fidelização</h3>
+              <p>A cada 3 tatuagens realizadas, ele recebe mais 1 giro e mais vantagens.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section id="beneficios" class="section alt">
+        <div class="container">
+          <div class="section-header">
+            <span class="eyebrow dark">Benefícios</span>
+            <h2>Mais vantagens para quem escolhe a gente</h2>
+          </div>
+
+          <div class="benefits-grid">
+            <div class="benefit-card">
+              <span>🎯</span>
+              <h3>Desconto real</h3>
+              <p>Clientes ganham percentual de desconto em tatuagens e serviços.</p>
+            </div>
+            <div class="benefit-card">
+              <span>🔥</span>
+              <h3>Mais engajamento</h3>
+              <p>O sistema cria interesse, expectativa e interação constante com a marca.</p>
+            </div>
+            <div class="benefit-card">
+              <span>💬</span>
+              <h3>Melhor relacionamento</h3>
+              <p>Uma forma simples de valorizar cada cliente e fortalecer a fidelização.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="fidelizar" class="section cta-section">
+        <div class="container cta-box">
+          <div>
+            <span class="eyebrow dark">Fidelizar é valorizar</span>
+            <h2>Uma estratégia simples, moderna e que gera mais clientes.</h2>
+          </div>
+          <a class="btn btn-primary" href="#cadastro">Quero participar</a>
+        </div>
+      </section>
+
+      <section id="cadastro" class="section form-section">
+        <div class="container form-box">
+          <div class="form-copy">
+            <span class="eyebrow dark">Cadastro</span>
+            <h2>Ganhe seu primeiro giro</h2>
+            <p>Entre em contato e participe da nossa roleta de fidelidade.</p>
+          </div>
+
+          <form class="lead-form">
+            <input type="text" placeholder="Seu nome" aria-label="Seu nome" />
+            <input type="text" placeholder="Seu WhatsApp" aria-label="Seu WhatsApp" />
+            <button type="button" class="btn btn-primary">Cadastrar</button>
+          </form>
         </div>
       </section>
     </main>
 
-    <script src="app.js"></script>
+    <footer class="footer">
+      <div class="container footer-inner">
+        <span>© 2026 Roleta da Fidelidade</span>
+        <span>Seu próximo desconto está esperando.</span>
+      </div>
+    </footer>
+
+    <script src="script.js"></script>
   </body>
 </html>
