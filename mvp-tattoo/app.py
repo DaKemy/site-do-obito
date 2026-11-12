@@ -1,34 +1,45 @@
 from __future__ import annotations
 
 import json
+import hashlib
+import hmac
 import os
+import re
 import secrets
+import smtplib
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
+from email.message import EmailMessage
 from functools import wraps
 from pathlib import Path
 
 import sqlite3
-from flask import Flask, jsonify, request, send_from_directory, session
+from flask import Flask, abort, jsonify, request, send_from_directory, session
+from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 
 BASE_DIR = Path(__file__).resolve().parent
+WEB_ROOT = BASE_DIR.parent
 DB_PATH = BASE_DIR / 'data.sqlite'
 STATIC_DIR = BASE_DIR / 'public'
 UPLOAD_FOLDER = BASE_DIR / 'uploads'
 UPLOAD_FOLDER.mkdir(exist_ok=True)
 
-app = Flask(__name__, static_folder=str(STATIC_DIR), static_url_path='')
+app = Flask(__name__)
 app.secret_key = os.environ.get('FLASK_SECRET_KEY')
 app.config['UPLOAD_FOLDER'] = str(UPLOAD_FOLDER)
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+app.config['SESSION_COOKIE_SECURE'] = os.environ.get('SESSION_COOKIE_SECURE') == '1'
 
 ADMIN_USERNAME = os.environ.get('ADMIN_USERNAME')
 ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD')
+CPF_HASH_SECRET = os.environ.get('CPF_HASH_SECRET')
 
-if not app.secret_key or not ADMIN_USERNAME or not ADMIN_PASSWORD:
+if not app.secret_key or not ADMIN_USERNAME or not ADMIN_PASSWORD or not CPF_HASH_SECRET:
     raise RuntimeError(
-        'Set FLASK_SECRET_KEY, ADMIN_USERNAME, and ADMIN_PASSWORD environment variables.'
+        'Set FLASK_SECRET_KEY, ADMIN_USERNAME, ADMIN_PASSWORD, and CPF_HASH_SECRET environment variables.'
     )
 
 
@@ -45,6 +56,82 @@ def admin_required(view):
             return jsonify({'error': 'Sem autorização de administrador.'}), 401
         return view(*args, **kwargs)
     return wrapped
+
+
+def customer_required(view):
+    @wraps(view)
+    def wrapped(*args, **kwargs):
+        customer_id = session.get('customer_id')
+        if not customer_id:
+            return jsonify({'error': 'Entre na sua conta para continuar.'}), 401
+        conn = get_db()
+        customer = conn.execute(
+            'SELECT id FROM customers WHERE id = ? AND email_verified = 1',
+            (customer_id,),
+        ).fetchone()
+        conn.close()
+        if not customer:
+            session.pop('customer_id', None)
+            return jsonify({'error': 'Entre na sua conta para continuar.'}), 401
+        return view(*args, **kwargs)
+    return wrapped
+
+
+def valid_cpf(value):
+    cpf = re.sub(r'\D', '', str(value or ''))
+    if len(cpf) != 11 or len(set(cpf)) == 1:
+        return False
+    digits = [int(char) for char in cpf]
+    for length in (9, 10):
+        weight = length + 1
+        total = sum(digits[index] * (weight - index) for index in range(length))
+        check_digit = (total * 10) % 11
+        if check_digit == 10:
+            check_digit = 0
+        if digits[length] != check_digit:
+            return False
+    return True
+
+
+def cpf_digest(value):
+    normalized = re.sub(r'\D', '', value)
+    return hmac.new(CPF_HASH_SECRET.encode(), normalized.encode(), hashlib.sha256).hexdigest()
+
+
+def token_digest(token):
+    return hashlib.sha256(token.encode()).hexdigest()
+
+
+def send_account_email(recipient, subject, body):
+    host = os.environ.get('SMTP_HOST')
+    sender = os.environ.get('SMTP_FROM')
+    if not host or not sender:
+        raise RuntimeError('Confirme o e-mail somente depois de configurar SMTP_HOST e SMTP_FROM.')
+
+    message = EmailMessage()
+    message['Subject'] = subject
+    message['From'] = sender
+    message['To'] = recipient
+    message.set_content(body)
+
+    port = int(os.environ.get('SMTP_PORT', '587'))
+    username = os.environ.get('SMTP_USERNAME')
+    password = os.environ.get('SMTP_PASSWORD')
+    if os.environ.get('SMTP_USE_SSL') == '1':
+        with smtplib.SMTP_SSL(host, port, timeout=15) as server:
+            if username:
+                server.login(username, password or '')
+            server.send_message(message)
+        return
+
+    with smtplib.SMTP(host, port, timeout=15) as server:
+        server.ehlo()
+        if os.environ.get('SMTP_USE_TLS', '1') == '1':
+            server.starttls()
+            server.ehlo()
+        if username:
+            server.login(username, password or '')
+        server.send_message(message)
 
 
 def init_db():
@@ -129,6 +216,30 @@ def init_db():
         );
         """
     )
+    columns = {
+        row['name'] for row in conn.execute('PRAGMA table_info(customers)').fetchall()
+    }
+    account_columns = {
+        'email': 'TEXT',
+        'cpf_hash': 'TEXT',
+        'password_hash': 'TEXT',
+        'email_verified': 'INTEGER NOT NULL DEFAULT 0',
+        'verification_token_hash': 'TEXT',
+        'verification_expires_at': 'DATETIME',
+        'password_reset_token_hash': 'TEXT',
+        'password_reset_expires_at': 'DATETIME',
+    }
+    for name, definition in account_columns.items():
+        if name not in columns:
+            conn.execute(f'ALTER TABLE customers ADD COLUMN {name} {definition}')
+    conn.execute(
+        "CREATE UNIQUE INDEX IF NOT EXISTS idx_customers_email ON customers(email) "
+        "WHERE email IS NOT NULL AND email <> ''"
+    )
+    conn.execute(
+        "CREATE UNIQUE INDEX IF NOT EXISTS idx_customers_cpf_hash ON customers(cpf_hash) "
+        "WHERE cpf_hash IS NOT NULL AND cpf_hash <> ''"
+    )
     conn.commit()
     conn.close()
 
@@ -168,7 +279,7 @@ def customer_summary(customer):
 
 def pick_weighted_prize():
     conn = get_db()
-    prizes = conn.execute('SELECT * FROM reward_prizes WHERE active = 1').fetchall()
+    prizes = conn.execute('SELECT * FROM reward_prizes WHERE active = 1 ORDER BY id').fetchall()
     conn.close()
 
     if not prizes:
@@ -188,6 +299,8 @@ def pick_weighted_prize():
 
 @app.route('/uploads/<path:filename>')
 def uploaded_file(filename):
+    if not session.get('admin_logged_in') and not session.get('customer_id'):
+        return jsonify({'error': 'Entre na sua conta para acessar este arquivo.'}), 401
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 
@@ -199,10 +312,13 @@ def health():
 @app.route('/api/admin/login', methods=['POST'])
 def admin_login():
     payload = request.get_json(silent=True) or {}
-    username = (payload.get('username') or '').strip()
-    password = (payload.get('password') or '').strip()
+    username = str(payload.get('username') or '').strip()
+    password = payload.get('password') or ''
+    if not isinstance(password, str):
+        return jsonify({'error': 'Credenciais inválidas.'}), 401
 
     if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
+        session.clear()
         session['admin_logged_in'] = True
         session['admin_user'] = username
         return jsonify({'ok': True, 'user': username})
@@ -223,44 +339,290 @@ def admin_me():
     return jsonify({'ok': True, 'user': session.get('admin_user')})
 
 
+@app.route('/api/auth/register', methods=['POST'])
+def auth_register():
+    payload = request.get_json(silent=True) or {}
+    name = str(payload.get('name') or '').strip()
+    whatsapp = re.sub(r'\D', '', str(payload.get('whatsapp') or ''))
+    email = str(payload.get('email') or '').strip().lower()
+    cpf = re.sub(r'\D', '', str(payload.get('cpf') or ''))
+    password = payload.get('password') or ''
+
+    if not name or len(name) > 120 or len(whatsapp) not in (10, 11):
+        return jsonify({'error': 'Informe um nome e um telefone com DDD válidos.'}), 400
+    if not isinstance(password, str):
+        return jsonify({'error': 'A senha informada é inválida.'}), 400
+    if not re.fullmatch(r'[^@\s]+@[^@\s]+\.[^@\s]+', email):
+        return jsonify({'error': 'Informe um e-mail válido.'}), 400
+    if not valid_cpf(cpf):
+        return jsonify({'error': 'CPF inválido. Confira os dígitos informados.'}), 400
+    if len(password) < 8:
+        return jsonify({'error': 'A senha deve ter pelo menos 8 caracteres.'}), 400
+
+    verification_token = secrets.token_urlsafe(32)
+    expires_at = (datetime.now(timezone.utc) + timedelta(hours=1)).strftime('%Y-%m-%d %H:%M:%S')
+    conn = get_db()
+    try:
+        cursor = conn.execute(
+            """INSERT INTO customers
+               (whatsapp, name, email, cpf_hash, password_hash,
+                verification_token_hash, verification_expires_at)
+               VALUES (?, ?, ?, ?, ?, ?, ?)""",
+            (
+                whatsapp,
+                name,
+                email,
+                cpf_digest(cpf),
+                generate_password_hash(password),
+                token_digest(verification_token),
+                expires_at,
+            ),
+        )
+        conn.commit()
+        customer_id = cursor.lastrowid
+    except sqlite3.IntegrityError:
+        conn.close()
+        return jsonify({'error': 'CPF, e-mail ou telefone já cadastrado.'}), 409
+    conn.close()
+
+    base_url = os.environ.get('PUBLIC_BASE_URL', request.host_url).rstrip('/')
+    verification_url = f'{base_url}/?verificar={verification_token}'
+    try:
+        send_account_email(
+            email,
+            'Confirme seu e-mail - Roleta da Fidelidade',
+            f'Olá, {name}!\n\nConfirme seu e-mail neste link (válido por 1 hora):\n{verification_url}',
+        )
+    except (OSError, RuntimeError, smtplib.SMTPException, ValueError) as error:
+        app.logger.error('Falha ao enviar confirmação de e-mail: %s', error)
+        return jsonify({
+            'error': 'Não foi possível enviar o e-mail de confirmação. Configure o serviço de e-mail e tente novamente.'
+        }), 503
+
+    return jsonify({
+        'ok': True,
+        'message': 'Enviamos um link de confirmação para seu e-mail. Ele expira em 1 hora.',
+        'customerId': customer_id,
+    }), 202
+
+
+@app.route('/api/auth/resend-verification', methods=['POST'])
+def resend_verification():
+    payload = request.get_json(silent=True) or {}
+    identifier = str(payload.get('identifier') or payload.get('email') or '').strip()
+    password = payload.get('password') or ''
+    if not isinstance(password, str):
+        return jsonify({'error': 'Conta pendente não encontrada ou senha incorreta.'}), 400
+    conn = get_db()
+    if '@' in identifier:
+        customer = conn.execute(
+            'SELECT id, name, email, password_hash, email_verified FROM customers WHERE email = ?',
+            (identifier.lower(),),
+        ).fetchone()
+    else:
+        cpf = re.sub(r'\D', '', identifier)
+        if not valid_cpf(cpf):
+            conn.close()
+            return jsonify({'error': 'Conta pendente não encontrada ou senha incorreta.'}), 400
+        customer = conn.execute(
+            'SELECT id, name, email, password_hash, email_verified FROM customers WHERE cpf_hash = ?',
+            (cpf_digest(cpf),),
+        ).fetchone()
+    if (
+        not customer
+        or customer['email_verified']
+        or not customer['email']
+        or not customer['password_hash']
+        or not check_password_hash(customer['password_hash'], password)
+    ):
+        conn.close()
+        return jsonify({'error': 'Conta pendente não encontrada ou senha incorreta.'}), 400
+
+    token = secrets.token_urlsafe(32)
+    expires_at = (datetime.now(timezone.utc) + timedelta(hours=1)).strftime('%Y-%m-%d %H:%M:%S')
+    conn.execute(
+        'UPDATE customers SET verification_token_hash = ?, verification_expires_at = ? WHERE id = ?',
+        (token_digest(token), expires_at, customer['id']),
+    )
+    conn.commit()
+    conn.close()
+    base_url = os.environ.get('PUBLIC_BASE_URL', request.host_url).rstrip('/')
+    try:
+        send_account_email(
+            customer['email'],
+            'Confirme seu e-mail - Roleta da Fidelidade',
+            f'Olá, {customer["name"]}!\n\nConfirme seu e-mail neste link (válido por 1 hora):\n{base_url}/?verificar={token}',
+        )
+    except (OSError, RuntimeError, smtplib.SMTPException, ValueError) as error:
+        app.logger.error('Falha ao reenviar confirmação de e-mail: %s', error)
+        return jsonify({'error': 'Serviço de e-mail indisponível. Tente novamente mais tarde.'}), 503
+    return jsonify({'ok': True, 'message': 'Enviamos um novo link de confirmação.'})
+
+
+@app.route('/api/auth/verify-email', methods=['POST'])
+def verify_email():
+    payload = request.get_json(silent=True) or {}
+    token = payload.get('token') or ''
+    if not isinstance(token, str) or not token:
+        return jsonify({'error': 'Link de confirmação inválido.'}), 400
+    conn = get_db()
+    customer = conn.execute(
+        """SELECT id, name FROM customers
+           WHERE verification_token_hash = ? AND verification_expires_at > datetime('now')""",
+        (token_digest(token),),
+    ).fetchone()
+    if not customer:
+        conn.close()
+        return jsonify({'error': 'Link inválido ou expirado. Solicite outro link de confirmação.'}), 400
+    conn.execute(
+        """UPDATE customers SET email_verified = 1, verification_token_hash = NULL,
+           verification_expires_at = NULL WHERE id = ?""",
+        (customer['id'],),
+    )
+    conn.execute(
+        'INSERT OR IGNORE INTO loyalty_progress (customer_id) VALUES (?)',
+        (customer['id'],),
+    )
+    conn.execute(
+        """INSERT INTO customer_spins (customer_id, source, status, expires_at)
+           VALUES (?, 'signup', 'pending', datetime('now', '+30 days'))""",
+        (customer['id'],),
+    )
+    conn.commit()
+    conn.close()
+    session.clear()
+    session['customer_id'] = customer['id']
+    return jsonify({'ok': True, 'message': 'E-mail confirmado. Seu primeiro giro está disponível.'})
+
+
+@app.route('/api/auth/login', methods=['POST'])
+def auth_login():
+    payload = request.get_json(silent=True) or {}
+    identifier = str(payload.get('identifier') or '').strip()
+    password = payload.get('password') or ''
+    if not isinstance(password, str):
+        return jsonify({'error': 'Dados de acesso incorretos.'}), 401
+    if '@' in identifier:
+        conn = get_db()
+        customer = conn.execute(
+            'SELECT id, password_hash, email_verified FROM customers WHERE email = ?',
+            (identifier.lower(),),
+        ).fetchone()
+    else:
+        cpf = re.sub(r'\D', '', identifier)
+        if not valid_cpf(cpf):
+            return jsonify({'error': 'Informe um e-mail ou CPF válido.'}), 400
+        conn = get_db()
+        customer = conn.execute(
+            'SELECT id, password_hash, email_verified FROM customers WHERE cpf_hash = ?',
+            (cpf_digest(cpf),),
+        ).fetchone()
+    conn.close()
+    if not customer or not customer['password_hash'] or not check_password_hash(customer['password_hash'], password):
+        return jsonify({'error': 'Dados de acesso incorretos.'}), 401
+    if not customer['email_verified']:
+        return jsonify({'error': 'Confirme seu e-mail antes de entrar.'}), 403
+    session.clear()
+    session['customer_id'] = customer['id']
+    return jsonify({'ok': True, 'customerId': customer['id']})
+
+
+@app.route('/api/auth/me', methods=['GET'])
+def auth_me():
+    customer_id = session.get('customer_id')
+    if not customer_id:
+        return jsonify({'ok': True, 'customer': None})
+    conn = get_db()
+    customer = conn.execute(
+        'SELECT id, name, email, whatsapp, email_verified FROM customers WHERE id = ?',
+        (customer_id,),
+    ).fetchone()
+    conn.close()
+    if not customer or not customer['email_verified']:
+        session.pop('customer_id', None)
+        return jsonify({'ok': True, 'customer': None})
+    customer = {key: customer[key] for key in ('id', 'name', 'email', 'whatsapp')}
+    return jsonify({'ok': True, 'customer': dict(customer)})
+
+
+@app.route('/api/auth/logout', methods=['POST'])
+def auth_logout():
+    session.clear()
+    return jsonify({'ok': True})
+
+
+@app.route('/api/auth/password-reset', methods=['POST'])
+def request_password_reset():
+    payload = request.get_json(silent=True) or {}
+    email = str(payload.get('email') or '').strip().lower()
+    conn = get_db()
+    customer = conn.execute(
+        'SELECT id, name FROM customers WHERE email = ? AND email_verified = 1',
+        (email,),
+    ).fetchone()
+    if not customer:
+        conn.close()
+        return jsonify({'ok': True, 'message': 'Se o e-mail estiver cadastrado, enviaremos as instruções.'})
+
+    token = secrets.token_urlsafe(32)
+    expires_at = (datetime.now(timezone.utc) + timedelta(minutes=30)).strftime('%Y-%m-%d %H:%M:%S')
+    conn.execute(
+        'UPDATE customers SET password_reset_token_hash = ?, password_reset_expires_at = ? WHERE id = ?',
+        (token_digest(token), expires_at, customer['id']),
+    )
+    conn.commit()
+    conn.close()
+    base_url = os.environ.get('PUBLIC_BASE_URL', request.host_url).rstrip('/')
+    reset_url = f'{base_url}/esqueci-senha.html?token={token}'
+    try:
+        send_account_email(
+            email,
+            'Redefina sua senha - Roleta da Fidelidade',
+            f'Olá, {customer["name"]}!\n\nRedefina sua senha neste link (válido por 30 minutos):\n{reset_url}',
+        )
+    except (OSError, RuntimeError, smtplib.SMTPException, ValueError) as error:
+        app.logger.error('Falha ao enviar recuperação de senha: %s', error)
+        return jsonify({'error': 'Serviço de e-mail indisponível. Tente novamente mais tarde.'}), 503
+    return jsonify({'ok': True, 'message': 'Se o e-mail estiver cadastrado, enviaremos as instruções.'})
+
+
+@app.route('/api/auth/reset-password', methods=['POST'])
+def reset_password():
+    payload = request.get_json(silent=True) or {}
+    token = payload.get('token') or ''
+    password = payload.get('password') or ''
+    if not isinstance(token, str) or not isinstance(password, str) or len(password) < 8:
+        return jsonify({'error': 'A senha deve ter pelo menos 8 caracteres.'}), 400
+    conn = get_db()
+    customer = conn.execute(
+        """SELECT id FROM customers
+           WHERE password_reset_token_hash = ? AND password_reset_expires_at > datetime('now')""",
+        (token_digest(token),),
+    ).fetchone()
+    if not customer:
+        conn.close()
+        return jsonify({'error': 'Link inválido ou expirado. Solicite uma nova recuperação.'}), 400
+    conn.execute(
+        """UPDATE customers SET password_hash = ?, password_reset_token_hash = NULL,
+           password_reset_expires_at = NULL WHERE id = ?""",
+        (generate_password_hash(password), customer['id']),
+    )
+    conn.commit()
+    conn.close()
+    session.clear()
+    return jsonify({'ok': True, 'message': 'Senha alterada. Entre com sua nova senha.'})
+
+
 @app.route('/api/customers/register', methods=['POST'])
 def register_customer():
-    payload = request.get_json(silent=True) or {}
-    whatsapp = (payload.get('whatsapp') or '').strip()
-    name = (payload.get('name') or '').strip()
-
-    if not whatsapp or not name:
-        return jsonify({'error': 'WhatsApp e nome são obrigatórios.'}), 400
-
-    conn = get_db()
-    existing = conn.execute('SELECT * FROM customers WHERE whatsapp = ?', (whatsapp,)).fetchone()
-    if existing:
-        conn.close()
-        return jsonify({'ok': True, 'customer': customer_summary(existing), 'message': 'Cliente já cadastrado.'})
-
-    cursor = conn.execute(
-        'INSERT INTO customers (whatsapp, name) VALUES (?, ?)',
-        (whatsapp, name),
-    )
-    customer_id = cursor.lastrowid
-    conn.execute(
-        'INSERT INTO customer_spins (customer_id, source, status, expires_at) VALUES (?, ?, ?, datetime("now", "+30 days"))',
-        (customer_id, 'signup', 'pending'),
-    )
-    existing_loyalty = conn.execute('SELECT * FROM loyalty_progress WHERE customer_id = ?', (customer_id,)).fetchone()
-    if existing_loyalty is None:
-        conn.execute(
-            'INSERT INTO loyalty_progress (customer_id, completed_tattoos, available_spins, last_milestone) VALUES (?, 0, 0, 0)',
-            (customer_id,),
-        )
-    conn.commit()
-    customer = conn.execute('SELECT * FROM customers WHERE id = ?', (customer_id,)).fetchone()
-    conn.close()
-    return jsonify({'ok': True, 'customer': customer_summary(customer)}), 201
+    return jsonify({'error': 'Use o cadastro com CPF e confirmação de e-mail.'}), 410
 
 
 @app.route('/api/customers/<int:customer_id>', methods=['GET'])
+@customer_required
 def get_customer(customer_id):
+    if customer_id != session.get('customer_id'):
+        return jsonify({'error': 'Sem autorização.'}), 403
     conn = get_db()
     customer = conn.execute('SELECT * FROM customers WHERE id = ?', (customer_id,)).fetchone()
     if not customer:
@@ -286,11 +648,13 @@ def get_customer(customer_id):
 
 
 @app.route('/api/spins/roll', methods=['POST'])
+@customer_required
 def roll_spin():
     payload = request.get_json(silent=True) or {}
-    customer_id = payload.get('customerId')
-    if not customer_id:
-        return jsonify({'error': 'customerId obrigatório.'}), 400
+    customer_id = session['customer_id']
+    supplied_customer_id = payload.get('customerId')
+    if supplied_customer_id is not None and str(supplied_customer_id) != str(customer_id):
+        return jsonify({'error': 'Sem autorização.'}), 403
 
     conn = get_db()
     customer = conn.execute('SELECT * FROM customers WHERE id = ?', (customer_id,)).fetchone()
@@ -309,14 +673,18 @@ def roll_spin():
     prize = pick_weighted_prize()
     result = {
         'prizeId': prize['id'],
+        'segmentIndex': conn.execute(
+            'SELECT COUNT(*) FROM reward_prizes WHERE active = 1 AND id < ?',
+            (prize['id'],),
+        ).fetchone()[0],
         'prizeName': prize['name'],
         'discountPercent': float(prize['discount_percent']),
         'tomoeLevel': int(prize['tomoe_level']),
-        'rolledAt': datetime.utcnow().isoformat() + 'Z'
+        'rolledAt': datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z')
     }
-    expires_at = (datetime.utcnow() + timedelta(days=30)).strftime('%Y-%m-%d %H:%M:%S')
+    expires_at = (datetime.now(timezone.utc) + timedelta(days=30)).strftime('%Y-%m-%d %H:%M:%S')
     random_seed = str(uuid.uuid4())
-    coupon_code = f"TAT-{int(datetime.utcnow().timestamp() * 1000) % 1000000:06d}"
+    coupon_code = f"TAT-{int(datetime.now(timezone.utc).timestamp() * 1000) % 1000000:06d}"
 
     conn.execute(
         'UPDATE customer_spins SET prize_id = ?, status = ?, used_at = CURRENT_TIMESTAMP, expires_at = ?, random_seed = ?, server_result = ? WHERE id = ?',
@@ -336,7 +704,9 @@ def roll_spin():
 @admin_required
 def admin_customers():
     conn = get_db()
-    customers = conn.execute('SELECT * FROM customers ORDER BY created_at DESC').fetchall()
+    customers = conn.execute(
+        'SELECT id, name, whatsapp, email, created_at FROM customers ORDER BY created_at DESC'
+    ).fetchall()
     sessions = conn.execute('SELECT * FROM tattoo_sessions ORDER BY created_at DESC').fetchall()
     requests = conn.execute('SELECT * FROM tattoo_requests ORDER BY created_at DESC').fetchall()
     conn.close()
@@ -344,13 +714,13 @@ def admin_customers():
 
 
 @app.route('/api/tattoos/request', methods=['POST'])
+@customer_required
 def create_tattoo_request():
-    customer_id = None
+    customer_id = session['customer_id']
     description = ''
     payload = request.get_json(silent=True) or {}
     if request.files:
         file = request.files.get('referenceImage')
-        customer_id = request.form.get('customerId')
         description = (request.form.get('description') or '').strip()
         title = request.form.get('title') or 'Ideia de tatuagem'
         body_part = request.form.get('bodyPart') or ''
@@ -365,15 +735,14 @@ def create_tattoo_request():
         else:
             reference_url = request.form.get('referenceImageUrl') or ''
     else:
-        customer_id = payload.get('customerId')
         description = (payload.get('description') or '').strip()
         title = payload.get('title') or 'Ideia de tatuagem'
         body_part = payload.get('bodyPart') or ''
         size = payload.get('size') or ''
         reference_url = payload.get('referenceImageUrl') or ''
 
-    if not customer_id or not description:
-        return jsonify({'error': 'customerId e descrição são obrigatórios.'}), 400
+    if not description:
+        return jsonify({'error': 'A descrição é obrigatória.'}), 400
 
     conn = get_db()
     conn.execute(
@@ -436,7 +805,10 @@ def approve_tattoo():
 
 
 @app.route('/api/customers/<int:customer_id>/loyalty', methods=['GET'])
+@customer_required
 def get_loyalty(customer_id):
+    if customer_id != session.get('customer_id'):
+        return jsonify({'error': 'Sem autorização.'}), 403
     conn = get_db()
     loyalty = conn.execute('SELECT * FROM loyalty_progress WHERE customer_id = ?', (customer_id,)).fetchone()
     conn.close()
@@ -447,10 +819,34 @@ def get_loyalty(customer_id):
 
 @app.route('/')
 def index():
+    return send_from_directory(str(WEB_ROOT), 'index.html')
+
+
+@app.route('/mvp')
+@app.route('/mvp/')
+def mvp_index():
     return send_from_directory(str(STATIC_DIR), 'index.html')
+
+
+@app.route('/mvp-assets/<path:filename>')
+def mvp_assets(filename):
+    return send_from_directory(str(STATIC_DIR), filename)
+
+
+@app.route('/<path:filename>')
+def web_file(filename):
+    if filename.startswith('assets/'):
+        return send_from_directory(str(WEB_ROOT), filename)
+    if filename not in {'styles.css', 'login.js', 'script.js', 'njnaruto.ttf', 'esqueci-senha.html'}:
+        abort(404)
+    return send_from_directory(str(WEB_ROOT), filename)
 
 
 if __name__ == '__main__':
     init_db()
     seed_prizes()
-    app.run(host='0.0.0.0', port=5000, debug=os.environ.get('FLASK_DEBUG') == '1')
+    app.run(
+        host='0.0.0.0',
+        port=int(os.environ.get('PORT', '5000')),
+        debug=os.environ.get('FLASK_DEBUG') == '1',
+    )
