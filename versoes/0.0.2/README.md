@@ -58,7 +58,13 @@ site em `http://127.0.0.1:5000`. O guia está disponível em
 - GitHub Pages não executa Flask. Para disponibilizar login e banco na internet,
   hospede o backend em um serviço compatível com Python e configure as variáveis
   de ambiente como segredos do serviço.
-- Configure SMTP para envio de confirmação e recuperação de senha.
+- Para confirmação e recuperação de senha no Render, configure
+  `EMAIL_PROVIDER=gmail_api` e as credenciais OAuth do Gmail como segredos.
+  Esse modo envia pela API HTTPS do Gmail e evita depender de SMTP de saída.
+  Ative a Gmail API no Google Cloud e configure `GMAIL_CLIENT_ID`,
+  `GMAIL_CLIENT_SECRET`, `GMAIL_REFRESH_TOKEN` e `GMAIL_FROM` no Render; não
+  compartilhe esses valores no chat. SMTP continua disponível em ambientes que
+  permitem conexões SMTP.
 - O acesso do cliente continua no formulário normal de cadastro/login. O ícone
   de catraca no canto superior direito abre um painel separado, exclusivo para
   contas de desenvolvedor. As senhas administrativas ficam armazenadas como
