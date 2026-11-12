@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Rinnegan Tattoo Club</title>
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="/mvp-assets/styles.css" />
   </head>
   <body>
     <header class="topbar">
@@ -20,15 +20,25 @@
           <span class="eyebrow">Fidelidade + Gamificação</span>
           <h1>Cadastre-se e ganhe um giro na roleta Sharingan.</h1>
           <p>
-            Cada cadastro traz 1 rodada, e a cada 3 tatuagens aprovadas o cliente ganha +1 giro.
+            Após confirmar o e-mail, o cliente recebe 1 rodada; a cada 3 tatuagens aprovadas, ganha +1 giro.
           </p>
         </div>
 
         <form id="registerForm" class="register-form">
-          <input name="name" placeholder="Nome" required />
-          <input name="whatsapp" placeholder="WhatsApp" required />
+          <input name="name" placeholder="Nome" maxlength="120" autocomplete="name" required />
+          <input name="whatsapp" placeholder="WhatsApp com DDD" autocomplete="tel" required />
+          <input name="cpf" placeholder="CPF" inputmode="numeric" autocomplete="off" required />
+          <input name="email" type="email" placeholder="E-mail" autocomplete="email" required />
+          <input name="password" type="password" placeholder="Senha (mín. 8 caracteres)" minlength="8" autocomplete="new-password" required />
           <button type="submit">Cadastrar</button>
         </form>
+        <form id="customerLoginForm" class="register-form">
+          <input name="identifier" placeholder="E-mail ou CPF" autocomplete="username" required />
+          <input name="password" type="password" placeholder="Senha" autocomplete="current-password" required />
+          <button type="submit">Entrar</button>
+          <button id="customerLogoutBtn" class="ghost-button hidden" type="button">Sair da conta</button>
+        </form>
+        <p id="accountStatus" aria-live="polite"></p>
       </section>
 
       <section class="grid-two">
@@ -59,7 +69,7 @@
       <section class="panel request-panel">
         <h2>Enviar ideia / orçamento</h2>
         <form id="ideaForm" class="idea-form" enctype="multipart/form-data">
-          <input name="customerId" placeholder="ID do cliente" required />
+          <input name="customerId" type="hidden" />
           <input name="title" placeholder="Título da ideia" />
           <input name="bodyPart" placeholder="Local do corpo" />
           <input name="size" placeholder="Tamanho" />
@@ -91,6 +101,6 @@
       </section>
     </main>
 
-    <script src="app.js"></script>
+    <script src="/mvp-assets/app.js" defer></script>
   </body>
 </html>

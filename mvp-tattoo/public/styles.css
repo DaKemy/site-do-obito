@@ -144,6 +144,7 @@ button {
   width: 280px;
   height: 280px;
   border-radius: 50%;
+  overflow: hidden;
   background: conic-gradient(
     #d9222d 0deg 60deg,
     #280b17 60deg 120deg,
@@ -201,6 +202,18 @@ button {
   border-radius: 12px;
   padding: 0.9rem 1rem;
   color: var(--muted);
+}
+
+#accountStatus {
+  color: var(--muted);
+}
+
+#accountStatus.error {
+  color: #ff8b8b;
+}
+
+[hidden] {
+  display: none !important;
 }
 
 .loyalty-grid {
@@ -292,5 +305,12 @@ button {
 @media (max-width: 860px) {
   .hero, .grid-two {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 420px) {
+  .wheel {
+    width: min(280px, calc(100vw - 120px));
+    height: min(280px, calc(100vw - 120px));
   }
 }
