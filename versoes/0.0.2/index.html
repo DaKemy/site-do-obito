@@ -38,6 +38,12 @@
             </nav>
 
                 <a class="btn btn-primary1" href="#cadastro">Quero participar</a>
+                <a href="#administracao" id="adminOpenLink" class="admin-access"
+                   aria-label="Acesso do desenvolvedor" title="Acesso do desenvolvedor">
+                    <svg aria-hidden="true" viewBox="0 0 48 48" focusable="false">
+                        <path d="M24 7v34M18 41h12M24 18h16M35 14v8M24 18 12 28M8 25v7M12 28l4 4" />
+                    </svg>
+                </a>
             
         </div>
     </header>
@@ -227,6 +233,64 @@
 </div>
 
 </section>
+
+        <section id="administracao" class="section admin-section" hidden>
+            <div class="container">
+                <div class="section-header">
+                    <span class="eyebrow dark">Acesso restrito · desenvolvedor</span>
+                    <h2>Painel do desenvolvedor</h2>
+                    <p>Gerencie contas de clientes, redefina senhas e configure os prêmios da roleta.</p>
+                </div>
+
+                <div class="admin-card" id="adminLoginView">
+                    <h3>Acesso administrativo</h3>
+                    <form id="adminLoginForm" class="admin-form">
+                        <label>Usuário administrador
+                            <input name="username" autocomplete="username" required>
+                        </label>
+                        <label>Senha administrativa
+                            <input name="password" type="password" autocomplete="current-password" required>
+                        </label>
+                        <button class="btn btn-primary" type="submit">Entrar no painel</button>
+                    </form>
+                </div>
+
+                <p id="adminMessage" class="account-message" aria-live="polite"></p>
+                <div id="adminContent" hidden>
+                    <div class="admin-toolbar">
+                        <p id="adminWelcome"></p>
+                        <button class="btn btn-secondary" id="adminLogout" type="button">Sair do painel</button>
+                    </div>
+
+                    <div class="admin-tabs" role="tablist" aria-label="Seções administrativas">
+                        <button class="btn btn-secondary active" type="button" data-admin-tab="customers">Usuários</button>
+                        <button class="btn btn-secondary" type="button" data-admin-tab="prizes">Configurar roleta</button>
+                    </div>
+
+                    <section class="admin-panel" id="adminCustomersPanel">
+                        <div class="admin-panel-heading">
+                            <h3>Usuários cadastrados</h3>
+                            <input id="adminCustomerSearch" type="search" placeholder="Buscar por nome, e-mail ou telefone">
+                        </div>
+                        <div id="adminCustomers" class="admin-customer-list"></div>
+                    </section>
+
+                    <section class="admin-panel" id="adminPrizesPanel" hidden>
+                        <h3>Prêmios e probabilidades da roleta</h3>
+                        <p>O peso define a chance relativa de cada prêmio; números maiores aumentam essa chance.</p>
+                        <form id="adminPrizesForm">
+                            <div id="adminPrizes" class="admin-prize-list"></div>
+                            <button class="btn btn-primary" type="submit">Salvar prêmios</button>
+                        </form>
+                    </section>
+
+                    <aside class="admin-notice">
+                        <strong>Segurança:</strong> senhas atuais nunca são exibidas. Senhas administrativas,
+                        conexão do banco e SMTP continuam protegidos nas variáveis do Render.
+                    </aside>
+                </div>
+            </div>
+        </section>
     </main>
 
     <!-- ==================== RODAPÉ ==================== -->
@@ -240,6 +304,7 @@
     <!-- ==================== JAVASCRIPT ==================== -->
     <script src="login.js" defer></script>
     <script src="script.js" defer></script>
+    <script src="admin.js" defer></script>
 
 <!-- Fim config telefone -->
 </body>

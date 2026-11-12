@@ -38,11 +38,14 @@ site em `http://127.0.0.1:5000`. O guia está disponível em
 
 ## Arquivos principais
 
-- `index.html`, `styles.css`, `login.js` e `script.js`: página principal e
-  interações do navegador.
+- `index.html`, `styles.css`, `login.js`, `script.js` e `admin.js`: página
+  principal, conta do cliente, roleta e painel administrativo.
 - `esqueci-senha.html`: solicitação de recuperação e definição de nova senha.
 - `mvp-tattoo/app.py`: API Flask, autenticação, regras de negócio e acesso ao
   PostgreSQL.
+- `mvp-tattoo/manage_admin.py`: utilitário para criar ou redefinir contas do
+  painel do desenvolvedor; solicita as senhas sem exibi-las e grava somente o
+  hash no banco.
 - `mvp-tattoo/public/`: recursos estáticos remanescentes do painel antigo. A
   interface antiga foi removida; `/mvp` agora redireciona para a página
   principal da versão 0.0.2.
@@ -56,6 +59,22 @@ site em `http://127.0.0.1:5000`. O guia está disponível em
   hospede o backend em um serviço compatível com Python e configure as variáveis
   de ambiente como segredos do serviço.
 - Configure SMTP para envio de confirmação e recuperação de senha.
+- O acesso do cliente continua no formulário normal de cadastro/login. O ícone
+  de catraca no canto superior direito abre um painel separado, exclusivo para
+  contas de desenvolvedor. As senhas administrativas ficam armazenadas como
+  hash no banco; para criar ou redefinir uma conta localmente, use
+  `py manage_admin.py create usuario` ou `py manage_admin.py reset-password usuario`
+  a partir de `mvp-tattoo`.
+- Na primeira inicialização após a atualização, a conta administrativa já
+  configurada em `ADMIN_USERNAME` e `ADMIN_PASSWORD` é migrada para a tabela
+  protegida por hash. Depois de confirmar o primeiro acesso no painel, remova
+  essas duas variáveis do Render; contas adicionais e redefinições são feitas
+  pelo utilitário Python.
+- O painel em **Administração** permite buscar, editar e excluir usuários,
+  redefinir senhas e configurar os prêmios e probabilidades da roleta. A
+  exclusão também remove os dados associados e as imagens anexadas às
+  solicitações de tatuagem. Senhas existentes e segredos de ambiente nunca são
+  exibidos no painel.
 - O arquivo `.env` e os dados de banco não devem ser enviados ao Git.
 - Esta cópia usa o banco indicado por seu próprio `DATABASE_URL`; não copia os
   dados da aplicação SQLite antiga.

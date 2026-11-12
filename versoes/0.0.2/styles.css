@@ -97,6 +97,36 @@ img {
     gap: 20px;
 }
 
+.admin-access {
+  display: grid;
+  width: 46px;
+  height: 46px;
+  flex: 0 0 46px;
+  place-items: center;
+  border: 1px solid rgba(255, 138, 4, 0.6);
+  border-radius: 50%;
+  background: linear-gradient(135deg, #a90c08, #e46b05);
+  box-shadow: 0 8px 22px rgba(155, 4, 4, 0.3);
+  color: white;
+}
+
+.admin-access svg {
+  width: 27px;
+  height: 27px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 3;
+}
+
+.admin-access:hover,
+.admin-access:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  transform: translateY(-1px);
+}
+
 /* ==========================================================
    marca
    ========================================================== */
@@ -438,6 +468,7 @@ img {
   position: relative;
   width: 320px;
   height: 320px;
+  --wheel-label-radius: 128px;
   border-radius: 50%;
   overflow: hidden;
 
@@ -918,6 +949,175 @@ img {
     color: #ff8b8b;
 }
 
+.admin-section {
+  border-top: 1px solid var(--line);
+  background: rgba(15, 8, 8, 0.82);
+}
+
+.admin-card,
+.admin-customer-card,
+.admin-prize-row,
+.admin-notice {
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(20, 10, 10, 0.95);
+}
+
+.admin-card {
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+.admin-card h3,
+.admin-panel h3 {
+  margin-bottom: 16px;
+}
+
+.admin-form {
+  display: grid;
+  gap: 14px;
+}
+
+.admin-form label,
+.admin-prize-row label {
+  display: grid;
+  gap: 6px;
+  color: var(--muted);
+}
+
+.admin-form input,
+.admin-panel-heading input,
+.admin-prize-row input {
+  width: 100%;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #161010;
+  color: white;
+  font: inherit;
+}
+
+.admin-form input:focus,
+.admin-panel-heading input:focus,
+.admin-prize-row input:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.admin-toolbar,
+.admin-customer-heading,
+.admin-panel-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.admin-tabs {
+  display: flex;
+  gap: 12px;
+  margin: 24px 0;
+}
+
+.admin-tabs .active {
+  background: linear-gradient(135deg, var(--primary), var(--primary-strong));
+}
+
+.admin-panel {
+  margin: 24px 0;
+}
+
+.admin-panel-heading input {
+  max-width: 380px;
+}
+
+.admin-customer-list,
+.admin-prize-list {
+  display: grid;
+  gap: 14px;
+  margin: 18px 0;
+}
+
+.admin-customer-card {
+  display: grid;
+  gap: 12px;
+}
+
+.admin-customer-heading h4 {
+  overflow-wrap: anywhere;
+}
+
+.admin-customer-details,
+.admin-panel > p,
+.admin-empty {
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+.admin-status {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(255, 139, 139, 0.14);
+  color: #ffabab;
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+
+.admin-status.verified {
+  background: rgba(104, 196, 128, 0.14);
+  color: #8fe6a2;
+}
+
+.admin-details {
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  padding-top: 10px;
+}
+
+.admin-details summary {
+  cursor: pointer;
+  color: var(--accent);
+}
+
+.admin-edit-form,
+.admin-reset-form {
+  margin-top: 12px;
+}
+
+.admin-delete-button {
+  justify-self: start;
+  background: #6f1010;
+  color: white;
+}
+
+.admin-prize-row {
+  display: grid;
+  grid-template-columns: minmax(180px, 2fr) repeat(3, minmax(110px, 1fr)) auto;
+  gap: 14px;
+}
+
+.admin-prize-active {
+  display: flex !important;
+  align-items: center;
+  gap: 8px !important;
+  align-self: end;
+}
+
+.admin-prize-active input {
+  width: auto;
+  accent-color: var(--accent);
+}
+
+.admin-notice {
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.admin-notice strong {
+  color: var(--text);
+}
+
 [hidden] {
     display: none !important;
 }
@@ -987,6 +1187,9 @@ img {
    Ajusta tamanhos e espaçamentos para celulares. */
 
 @media (max-width: 560px) {
+  .admin-access {
+    margin-left: auto;
+  }
 
   /* Reduz o espaçamento superior do banner. */
   .hero {
@@ -1034,6 +1237,7 @@ img {
   .wheel {
     width: 260px;
     height: 260px;
+    --wheel-label-radius: 102px;
   }
 
   /* Reposiciona os prêmios para acompanhar
@@ -1063,4 +1267,25 @@ img {
     transform: rotate(330deg) translateY(-102px);
   }
 
+}
+
+@media (max-width: 760px) {
+  .admin-toolbar,
+  .admin-panel-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .admin-panel-heading input {
+    max-width: none;
+  }
+
+  .admin-prize-row {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .admin-prize-active {
+    grid-column: 1 / -1;
+    align-self: auto;
+  }
 }
