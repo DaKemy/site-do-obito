@@ -1,8 +1,11 @@
+# Arquivos gerados pelo Python.
 mvp-tattoo/__pycache__/
+# Banco local e uploads podem conter dados privados: não versionar.
 mvp-tattoo/data.sqlite*
 mvp-tattoo/uploads/
 __pycache__/
 *.py[cod]
+# Pacotes Node instalados localmente e segredos; o modelo .env.example é permitido.
 node_modules/
 .env
 .env.*

@@ -1,3 +1,4 @@
+/* Folha visual da página principal 0.0.2; classes correspondem ao index.html. */
 :root {
   --bg: #080606;               /* Cor de fundo principal */
   --bg-soft: #2b1919;          /* Fundo secundário */
@@ -33,7 +34,7 @@ body {
     font-family: 'Naruto', fantasy !important;
 }
 
-/* Config geral página */
+/* Fundo, tipografia e medidas comuns a todas as seções da página. */
 body {
   background:
     radial-gradient(
@@ -949,6 +950,7 @@ img {
     color: #ff8b8b;
 }
 
+/* Painel do desenvolvedor: cartões, campos, abas, usuários e prêmios. */
 .admin-section {
   border-top: 1px solid var(--line);
   background: rgba(15, 8, 8, 0.82);
@@ -1128,6 +1130,7 @@ img {
 
 /* Espaçamento e borda superior do rodapé. */
 
+/* Rodapé: informações finais alinhadas em linha e quebradas em telas estreitas. */
 .footer {
   padding: 28px 0 36px;
   border-top: 1px solid var(--line);

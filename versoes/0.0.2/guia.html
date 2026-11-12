@@ -1,3 +1,4 @@
+<!-- Guia autocontido para localizar arquivos, aprender o fluxo e evitar versões antigas. -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -6,6 +7,7 @@
     <meta name="description" content="Guia visual da estrutura, dos arquivos e dos fluxos do Site do Obito.">
     <title>Guia do Site do Obito | Tutorial 0.0.2</title>
     <style>
+        /* Paleta e tipografia do próprio guia (não são as cores da página principal). */
         :root {
             color-scheme: dark;
             --page: #100d13;
@@ -20,6 +22,7 @@
             font-family: "Segoe UI", system-ui, sans-serif;
         }
 
+        /* Base, cabeçalho fixo e largura de leitura do tutorial. */
         * { box-sizing: border-box; }
         html { scroll-behavior: smooth; scroll-padding-top: 88px; }
         body { margin: 0; background: var(--page); color: var(--text); line-height: 1.65; }
@@ -49,6 +52,7 @@
         .card { margin-bottom: 18px; padding: clamp(20px, 3.5vw, 34px); border: 1px solid var(--line); border-radius: 20px; background: linear-gradient(145deg, #1b1720, #17131a); }
         .card p, .card li { color: var(--muted); }
         .card li + li { margin-top: 7px; }
+        /* Componentes da árvore pesquisável e do painel que descreve o arquivo escolhido. */
         .index-card { margin-bottom: 26px; padding: clamp(20px, 3.5vw, 32px); border: 1px solid var(--line); border-radius: 20px; background: #19151d; }
         .index-top { display: flex; align-items: end; justify-content: space-between; gap: 20px; margin-bottom: 18px; }
         .index-top h2 { margin-bottom: 4px; }
@@ -87,6 +91,7 @@
         .file-path { margin-top: 0; color: #ffabb8 !important; font-family: Consolas, monospace; font-size: .84rem; overflow-wrap: anywhere; }
         .footer { padding: 24px; border-top: 1px solid var(--line); color: #938698; text-align: center; font-size: .88rem; }
         code { padding: 2px 6px; border-radius: 5px; background: #100d13; color: #ffd2d9; font-family: Consolas, monospace; overflow-wrap: anywhere; }
+        /* Ajustes responsivos: reduzem colunas e margens em telas menores. */
         @media (max-width: 900px) {
             .layout { padding: 20px 22px 56px; }
             .hero { margin: 18px 22px 0; }
@@ -112,6 +117,7 @@
         </nav>
     </header>
 
+    <!-- Abertura: identifica a versão principal e alerta sobre cópias históricas. -->
     <section class="hero" id="inicio">
         <span class="eyebrow">Versão principal · 0.0.2</span>
         <h1>Conheça a estrutura e os fluxos do projeto.</h1>
@@ -121,6 +127,7 @@
 
     <div class="layout">
         <main>
+            <!-- Índice: busca e seleção de arquivo atualizam o painel de detalhes abaixo. -->
             <section class="index-card" id="mapa" aria-label="Índice de arquivos do projeto">
                 <div class="index-top">
                     <div>
@@ -144,6 +151,7 @@
                 </section>
             </section>
 
+            <!-- Resumo da arquitetura para entender qual camada executa cada tarefa. -->
             <section class="card">
                 <span class="eyebrow">Visão geral</span>
                 <h2>Arquitetura em quatro camadas</h2>
@@ -156,6 +164,7 @@
                 </div>
             </section>
 
+            <!-- Tutoriais passo a passo seguem dados do HTML até o banco e de volta. -->
             <section class="card" id="trilhas">
                 <span class="eyebrow">Tutoriais guiados</span>
                 <h2>Como uma ação percorre o projeto</h2>
@@ -198,6 +207,7 @@
                 </ul>
             </section>
 
+            <!-- Contratos entre interface, API e persistência que devem permanecer alinhados. -->
             <section class="card">
                 <span class="eyebrow">Leitura técnica</span>
                 <h2>Contratos entre camadas</h2>
@@ -209,6 +219,7 @@
                 </ul>
             </section>
 
+            <!-- Segurança: explica o que não deve ir ao repositório público. -->
             <section class="card">
                 <span class="eyebrow">Segurança e privacidade</span>
                 <h2>Arquivos que não devem ser compartilhados</h2>
@@ -222,6 +233,7 @@
                 <p>Esta edição não copia código de credenciais, banco de clientes, uploads, nem o arquivo compactado original. A árvore lista o propósito dos componentes, sem exibir valores secretos ou dados pessoais.</p>
             </section>
 
+            <!-- Diagnóstico: sugere qual camada conferir antes de alterar código/dados. -->
             <section class="card">
                 <span class="eyebrow">Se algo não funcionar</span>
                 <h2>Diagnóstico por camada</h2>
@@ -242,7 +254,9 @@
 
     <footer class="footer">Guia do Site do Obito · Edição tutorial 0.0.2</footer>
 
+    <!-- Os dados abaixo alimentam o mapa; o tutorial não abre nem mostra arquivos secretos. -->
     <script>
+        // Cada registro associa um caminho do projeto a propósito, uso e alertas.
         const files = [
             {group:"Pasta principal · launcher e versão antiga",path:".env",tags:"segredo ambiente banco senha",purpose:"Guarda configurações privadas locais, como chaves e conexão de banco. É ignorado pelo Git e não deve ser compartilhado.",how:"O programa lê essas variáveis ao iniciar. Para hospedagem, configure-as como segredos no serviço em vez de publicar o arquivo.",warning:"O tutorial não abre nem mostra seu conteúdo."},
             {group:"Pasta principal · launcher e versão antiga",path:".gitignore",tags:"git ignorar segredo",purpose:"Diz ao Git quais arquivos locais não devem ser incluídos em commits, como ambientes virtuais, caches e arquivos .env.",how:"Antes de publicar, confira a lista e também revise os arquivos já rastreados pelo Git."},
@@ -346,12 +360,14 @@
         const fileInfo = document.getElementById("fileInfo");
         const fileCount = document.getElementById("fileCount");
 
+        // Converte caracteres especiais antes de inserir texto do índice em HTML.
         function escapeHtml(value) {
             return value.replace(/[&<>"']/g, (character) => ({
                 "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
             })[character]);
         }
 
+        // Atualiza o painel lateral com a explicação do arquivo selecionado.
         function showFile(file, button) {
             tree.querySelectorAll("button[aria-current]").forEach((item) => item.removeAttribute("aria-current"));
             if (button) button.setAttribute("aria-current", "true");
@@ -366,6 +382,7 @@
             document.getElementById("arquivoDetalhe").scrollIntoView({ behavior: "smooth", block: "nearest" });
         }
 
+        // Filtra os registros pela busca e redesenha grupos/atalhos do mapa.
         function drawTree() {
             const query = search.value.trim().toLocaleLowerCase("pt-BR");
             const matches = files.filter((file) => `${file.group} ${file.path} ${file.tags} ${file.purpose}`.toLocaleLowerCase("pt-BR").includes(query));
@@ -408,6 +425,7 @@
             noResults.hidden = matches.length > 0;
         }
 
+        // Refaz a árvore a cada alteração do campo de busca e na abertura inicial.
         search.addEventListener("input", drawTree);
         drawTree();
     </script>

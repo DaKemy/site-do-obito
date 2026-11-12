@@ -1,3 +1,4 @@
+// Controla os prêmios mostrados e a animação visual da roleta principal.
 const spinButton = document.getElementById('spinButton');
 const wheel = document.querySelector('.wheel');
 const spinMessage = document.getElementById('spinMessage');
@@ -6,6 +7,7 @@ let activePrizeCount = document.querySelectorAll('.wheel .segment').length;
 const wheelColors = ['#b65200', '#990000', '#e74d06', '#000000', '#ff4901', '#7e0a0a'];
 
 async function refreshWheelPrizes() {
+    // Busca a lista oficial de prêmios; os dados exibidos vêm do servidor.
     const response = await fetch('/api/prizes');
     const result = await response.json();
     if (!response.ok) throw new Error(result.error || 'Não foi possível carregar os prêmios.');
@@ -38,6 +40,7 @@ async function refreshWheelPrizes() {
 }
 
 if (wheel) {
+    // Inicializa a roleta e a atualiza quando o painel salva novas configurações.
     refreshWheelPrizes().catch((error) => {
         spinMessage.textContent = error.message;
         spinMessage.classList.add('error');
@@ -51,6 +54,7 @@ if (wheel) {
 }
 
 async function requestSpin() {
+    // Solicita ao backend o resultado oficial (o navegador não sorteia o prêmio).
     const response = await fetch('/api/spins/roll', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -62,6 +66,7 @@ async function requestSpin() {
 }
 
 if (spinButton && wheel) {
+    // Anima a roleta até o segmento correspondente ao resultado da API.
     spinButton.addEventListener('click', async () => {
         spinButton.disabled = true;
         spinMessage.textContent = '';

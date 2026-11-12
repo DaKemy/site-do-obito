@@ -1,3 +1,4 @@
+// Interface do painel exclusivo de desenvolvedor (separado da conta de cliente).
 const adminSection = document.getElementById('administracao');
 const adminLoginView = document.getElementById('adminLoginView');
 const adminLoginForm = document.getElementById('adminLoginForm');
@@ -8,6 +9,7 @@ const prizeList = document.getElementById('adminPrizes');
 let customers = [];
 
 async function adminRequest(url, options = {}) {
+    // Centraliza chamadas administrativas e apresenta erros HTTP com a mensagem da API.
     const response = await fetch(url, {
         ...options,
         headers: {
@@ -21,11 +23,13 @@ async function adminRequest(url, options = {}) {
 }
 
 function showAdminMessage(message, isError = false) {
+    // Mostra o resultado da ação atual no painel sem inserir conteúdo HTML externo.
     adminMessage.textContent = message;
     adminMessage.classList.toggle('error', isError);
 }
 
 function makeInput(labelText, name, value, type = 'text') {
+    // Cria um campo de formulário com rótulo associado ao controle.
     const label = document.createElement('label');
     label.textContent = labelText;
     const input = document.createElement('input');
@@ -38,6 +42,7 @@ function makeInput(labelText, name, value, type = 'text') {
 }
 
 function buildCustomerCard(customer) {
+    // Monta uma ficha de cliente com edição, redefinição de senha e exclusão.
     const card = document.createElement('article');
     card.className = 'admin-customer-card';
 
@@ -72,6 +77,7 @@ function buildCustomerCard(customer) {
     saveButton.textContent = 'Salvar dados';
     editForm.append(saveButton);
     editForm.addEventListener('submit', async (event) => {
+        // Salva dados de contato; a API valida e invalida confirmação se o e-mail mudar.
         event.preventDefault();
         try {
             const result = await adminRequest(`/api/admin/customers/${customer.id}`, {
@@ -107,6 +113,7 @@ function buildCustomerCard(customer) {
     resetButton.textContent = 'Definir nova senha';
     resetForm.append(resetButton);
     resetForm.addEventListener('submit', async (event) => {
+        // Só redefine a senha após confirmação explícita do desenvolvedor.
         event.preventDefault();
         if (!window.confirm(`Redefinir a senha de ${customer.name}?`)) return;
         try {
@@ -129,6 +136,7 @@ function buildCustomerCard(customer) {
     deleteButton.type = 'button';
     deleteButton.textContent = 'Excluir usuário';
     deleteButton.addEventListener('click', async () => {
+        // Exclusão é irreversível e a API remove os registros associados ao cliente.
         if (!window.confirm(`Excluir ${customer.name} e os dados associados a esta conta? Esta ação não pode ser desfeita.`)) return;
         try {
             const result = await adminRequest(`/api/admin/customers/${customer.id}`, { method: 'DELETE' });
@@ -143,6 +151,7 @@ function buildCustomerCard(customer) {
 }
 
 function renderCustomers() {
+    // Filtra a lista em memória e redesenha os cartões sem recarregar a página.
     const query = document.getElementById('adminCustomerSearch').value.trim().toLowerCase();
     customerList.replaceChildren();
     const filtered = customers.filter((customer) =>
@@ -160,12 +169,14 @@ function renderCustomers() {
 }
 
 async function loadCustomers() {
+    // Busca a lista protegida de contas e chama a função que monta sua interface.
     const result = await adminRequest('/api/admin/customers');
     customers = result.customers;
     renderCustomers();
 }
 
 async function loadPrizes() {
+    // Carrega configurações atuais e cria campos para cada prêmio existente.
     const result = await adminRequest('/api/admin/prizes');
     prizeList.replaceChildren();
     result.prizes.forEach((prize) => {
@@ -199,6 +210,7 @@ async function loadPrizes() {
 }
 
 function setAdminAuthenticated(user) {
+    // Alterna login/painel e carrega usuários e prêmios quando há sessão válida.
     adminLoginView.hidden = Boolean(user);
     adminContent.hidden = !user;
     document.getElementById('adminWelcome').textContent = user ? `Conectado como ${user}.` : '';
@@ -210,6 +222,7 @@ function setAdminAuthenticated(user) {
 }
 
 async function openAdminPanel() {
+    // Abre a área e consulta ao servidor se esta sessão já é de desenvolvedor.
     adminSection.hidden = false;
     try {
         const result = await adminRequest('/api/admin/me');
@@ -221,6 +234,7 @@ async function openAdminPanel() {
 
 document.getElementById('adminOpenLink').addEventListener('click', openAdminPanel);
 
+// Envia as credenciais de desenvolvedor; o servidor decide se são válidas.
 adminLoginForm.addEventListener('submit', async (event) => {
     event.preventDefault();
     const formData = new FormData(adminLoginForm);
@@ -240,6 +254,7 @@ adminLoginForm.addEventListener('submit', async (event) => {
 });
 
 document.getElementById('adminLogout').addEventListener('click', async () => {
+    // Encerra a sessão no servidor e volta a mostrar o formulário de acesso.
     try {
         await adminRequest('/api/admin/logout', { method: 'POST' });
         setAdminAuthenticated(null);
@@ -250,6 +265,7 @@ document.getElementById('adminLogout').addEventListener('click', async () => {
 });
 
 document.querySelectorAll('[data-admin-tab]').forEach((button) => {
+    // Alterna as abas de usuários e configuração da roleta.
     button.addEventListener('click', () => {
         const selected = button.dataset.adminTab;
         document.querySelectorAll('[data-admin-tab]').forEach((tab) => {
@@ -262,6 +278,7 @@ document.querySelectorAll('[data-admin-tab]').forEach((button) => {
 
 document.getElementById('adminCustomerSearch').addEventListener('input', renderCustomers);
 
+// Serializa os campos editáveis e pede à API para validar/salvar os prêmios.
 document.getElementById('adminPrizesForm').addEventListener('submit', async (event) => {
     event.preventDefault();
     const prizes = [...prizeList.querySelectorAll('.admin-prize-row')].map((row) => ({

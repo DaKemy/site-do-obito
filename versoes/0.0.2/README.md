@@ -53,6 +53,91 @@ site em `http://127.0.0.1:5000`. O guia está disponível em
 - `mvp-tattoo/test_auth.py`: testes do fluxo de autenticação e giro.
 - `guia.html`: mapa interativo do projeto e explicações dos fluxos.
 
+## Como entender e alterar o código
+
+Comece por `guia.html`: o índice pesquisável explica para que serve cada
+arquivo e mostra como cadastro, login, roleta e administração passam pelas
+camadas. Os comentários no código usam a sintaxe própria de cada linguagem:
+`<!-- ... -->` no HTML, `//` no JavaScript, `#` no Python e `/* ... */` no CSS.
+Esses comentários explicam o papel de uma seção ou função sem alterar o que o
+site executa.
+
+Uma mudança na interface normalmente percorre este caminho:
+
+1. `index.html` define a seção, os campos e os identificadores dos controles.
+2. `styles.css` define cores, tamanhos, disposição e adaptação para telas menores.
+3. `login.js`, `script.js` ou `admin.js` reage aos cliques e envia pedidos HTTP.
+4. `mvp-tattoo/app.py` valida os dados e aplica as regras antes de responder.
+5. O PostgreSQL persiste contas, progresso, giros e configurações.
+
+Use `name` dos campos HTML como contrato dos dados enviados à API e confira
+sempre as duas pontas antes de renomeá-lo. Arquivos em `versoes/old/` são
+referências históricas: uma alteração do site ativo deve começar em
+`versoes/0.0.2/`, não numa cópia antiga.
+
+### Mapa das páginas e responsabilidades
+
+| Arquivo | O que sua colega encontra nele |
+| --- | --- |
+| `index.html` | Cabeçalho e navegação, apresentação/roleta, etapas, benefícios, cadastro/login do cliente e painel do desenvolvedor. |
+| `esqueci-senha.html` | Formulário para pedir o link de recuperação e, com token, escolher uma senha nova. |
+| `guia.html` | Índice pesquisável dos arquivos, explicação das camadas e tutoriais dos principais fluxos. |
+| `styles.css` | Paleta, tipografia, tamanhos, disposição dos componentes, painel e regras para telas menores. |
+| `login.js` | Abas de cadastro/login, comunicação de conta, confirmação de e-mail e recuperação de senha. |
+| `script.js` | Busca dos prêmios, pedido de giro ao servidor e animação visual do resultado. |
+| `admin.js` | Sessão do desenvolvedor, busca/edição/exclusão de clientes e configuração da roleta. |
+| `mvp-tattoo/app.py` | API Flask, validações, sessões, banco, mensagens de e-mail e regras de negócio. |
+| `mvp-tattoo/manage_admin.py` | Comandos protegidos para criar uma conta de desenvolvedor ou redefinir sua senha. |
+| `mvp-tattoo/test_auth.py` | Testes de cadastro, privacidade, permissões, roleta, recuperação e fidelidade. |
+| `mvp-tattoo/test_email.py` | Testes simulados da integração Gmail API; não envia mensagens reais. |
+| `mvp-tattoo/server.js` | Iniciador opcional que executa o processo Python usando Node.js. |
+| `mvp-tattoo/public/` | Arquivos que restaram da interface antiga do MVP; não são a interface principal atual. |
+
+### Caminho das ações mais comuns
+
+- **Cadastro/login:** `index.html` → `login.js` → `/api/auth/...` em `app.py` →
+  PostgreSQL. O cadastro exige confirmação de e-mail antes de liberar o giro.
+- **Recuperar senha:** `esqueci-senha.html` → `login.js` →
+  `/api/auth/password-reset` para pedir o link e `/api/auth/reset-password`
+  para salvar a senha nova.
+- **Girar:** `script.js` pede `/api/spins/roll`; o servidor valida a sessão,
+  sorteia e grava o resultado. O navegador só anima o segmento retornado.
+- **Administrar:** a catraca abre o painel em `index.html`; `admin.js` chama
+  rotas `/api/admin/...`, que exigem uma sessão de desenvolvedor válida.
+- **Fidelidade:** o desenvolvedor aprova sessões de tatuagem; `app.py` soma o
+  progresso e cria um giro adicional a cada três conclusões.
+
+### Termos usados nos comentários
+
+- **Rota/API:** endereço HTTP atendido pelo backend, por exemplo
+  `/api/auth/login`.
+- **Sessão:** cookie protegido que permite ao servidor reconhecer a pessoa
+  autenticada sem reenviar a senha a cada ação.
+- **Hash de senha:** representação não reversível usada para conferir uma
+  senha sem guardar o texto digitado.
+- **HMAC do CPF:** resumo protegido por uma chave secreta, usado para localizar
+  uma conta sem armazenar o CPF em texto puro.
+- **Peso do prêmio:** valor relativo usado no sorteio; aumentar o peso aumenta
+  a chance relativa, não garante que o prêmio será escolhido.
+
+### Testes
+
+Os testes de e-mail usam respostas simuladas e podem ser executados sem enviar
+mensagem:
+
+```powershell
+cd versoes/0.0.2/mvp-tattoo
+py -m unittest test_email -v
+```
+
+`test_auth.py` cobre fluxos de ponta a ponta e precisa de PostgreSQL acessível
+em `DATABASE_URL`. Ele cria e remove um schema temporário; execute-o somente
+com uma base de testes dedicada, nunca apontando para o banco de produção:
+
+```powershell
+py -m unittest test_auth -v
+```
+
 ## Notas de operação
 
 - GitHub Pages não executa Flask. Para disponibilizar login e banco na internet,

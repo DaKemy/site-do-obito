@@ -1,4 +1,9 @@
 
+<!--
+    Página pública principal da versão 0.0.2.
+    Os textos e formulários ficam no HTML; styles.css controla a aparência,
+    login.js cuida das contas, script.js da roleta e admin.js do painel dev.
+-->
 <!DOCTYPE html>
 <html lang="pt-BR">
 
@@ -22,6 +27,7 @@
 <body>
 
     <!-- ==================== inicio ==================== -->
+    <!-- Cabeçalho fixo: identidade do site, navegação e acesso do desenvolvedor. -->
     <header class="topbar">
         <div class="container nav">
             <div class="brand">
@@ -47,6 +53,7 @@
             
         </div>
     </header>
+    <!-- Atalho flutuante para iniciar uma conversa pelo WhatsApp. -->
     <a class="hero-actionsmsg" href="https://wa.me/5541999224974?text=Olá!%20Gostaria%20de%20mais%20informações."
        target="_blank" rel="noopener noreferrer">
         <ion-icon name="logo-whatsapp"></ion-icon>WhatsApp
@@ -54,6 +61,7 @@
 
     <!-- ====================  main ==================== -->
     <main>
+        <!-- Apresentação: explica a promoção e mostra a roleta interativa. -->
         <section class="hero">
             <div class="container hero-grid">
                 <div class="hero-copy">
@@ -113,6 +121,7 @@
         </section>
 
         <!-- como funciona -->
+        <!-- Explica, em três etapas, cadastro, prêmio e retorno do cliente. -->
         <section id="como-funciona" class="section">
             <div class="container">
                 <div class="section-header">
@@ -148,6 +157,7 @@
 
         <!-- ==================== BENEFÍCIOS ==================== -->
 
+        <!-- Benefícios comerciais oferecidos pelo programa de fidelidade. -->
         <section id="beneficios" class="section alt">
             <div class="container">
                 <div class="section-header">
@@ -182,6 +192,7 @@
         </section>
 
         <!-- ==================== CHAMADA PARA FIDELIZAÇÃO ==================== -->
+        <!-- Chamada final: direciona a pessoa interessada ao formulário. -->
         <section id="fidelizar" class="section cta-section">
             <div class="container cta-box">
                 <div>
@@ -193,6 +204,7 @@
         </section>
 
         <!-- ==================== FORMULÁRIO DE CADASTRO ==================== -->
+        <!-- Área de conta do cliente: alterna entre cadastro e login por CPF/e-mail. -->
         <section id="cadastro" class="section form-section">
     <div class="container form-box">
 
@@ -203,7 +215,7 @@
         </div>
 
         
-<!-- CAIXINHA DO LOGIN/CADASTRO -->
+<!-- Contêiner dos formulários e das abas; login.js alterna a aba ativa. -->
 <div class="formulario">
     <div class="btn-form">
         <span id="tabEntrar" role="button" tabindex="0" onclick="mostrarEntrar()">Entrar</span>
@@ -211,7 +223,7 @@
         <hr id="Indicador">
     </div>
 
-    <!-- CADASTRO -->
+    <!-- Cadastro: os atributos name viram as chaves enviadas à API de contas. -->
     <form class="lead-form" id="CadastroSite">
         <input type="text" name="name" placeholder="Seu nome" maxlength="120" autocomplete="name" required>
         <input type="tel" name="whatsapp" id="telefone" placeholder="Telefone com DDD" autocomplete="tel" required>
@@ -221,7 +233,7 @@
         <button type="submit" name="sendCad" class="btn btn-primary">Cadastrar</button>
     </form>
 
-    <!-- LOGIN -->
+    <!-- Login do cliente: aceita identificador (CPF ou e-mail) e senha. -->
     <form class="lead-form2" id="EntrarPainel">
         <input type="text" name="identifier" id="loginAcesso" placeholder="E-mail ou CPF" autocomplete="username" required>
         <input type="password" name="password" placeholder="Digite sua senha" autocomplete="current-password" required>
@@ -234,6 +246,7 @@
 
 </section>
 
+        <!-- Painel do desenvolvedor, oculto até a pessoa clicar na catraca. -->
         <section id="administracao" class="section admin-section" hidden>
             <div class="container">
                 <div class="section-header">
@@ -242,6 +255,7 @@
                     <p>Gerencie contas de clientes, redefina senhas e configure os prêmios da roleta.</p>
                 </div>
 
+                <!-- Credenciais de desenvolvedor; não é o login de cliente. -->
                 <div class="admin-card" id="adminLoginView">
                     <h3>Acesso administrativo</h3>
                     <form id="adminLoginForm" class="admin-form">
@@ -262,11 +276,13 @@
                         <button class="btn btn-secondary" id="adminLogout" type="button">Sair do painel</button>
                     </div>
 
+                    <!-- Abas que alternam a lista de usuários e as regras da roleta. -->
                     <div class="admin-tabs" role="tablist" aria-label="Seções administrativas">
                         <button class="btn btn-secondary active" type="button" data-admin-tab="customers">Usuários</button>
                         <button class="btn btn-secondary" type="button" data-admin-tab="prizes">Configurar roleta</button>
                     </div>
 
+                    <!-- Lista pesquisável e ações para administrar contas de clientes. -->
                     <section class="admin-panel" id="adminCustomersPanel">
                         <div class="admin-panel-heading">
                             <h3>Usuários cadastrados</h3>
@@ -275,6 +291,7 @@
                         <div id="adminCustomers" class="admin-customer-list"></div>
                     </section>
 
+                    <!-- Configura nome, desconto, nível, chance e ativação dos prêmios. -->
                     <section class="admin-panel" id="adminPrizesPanel" hidden>
                         <h3>Prêmios e probabilidades da roleta</h3>
                         <p>O peso define a chance relativa de cada prêmio; números maiores aumentam essa chance.</p>
@@ -302,6 +319,7 @@
     </footer>
 
     <!-- ==================== JAVASCRIPT ==================== -->
+    <!-- Scripts separados por responsabilidade; defer espera o HTML ser interpretado. -->
     <script src="login.js" defer></script>
     <script src="script.js" defer></script>
     <script src="admin.js" defer></script>

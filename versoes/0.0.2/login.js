@@ -1,15 +1,18 @@
+// Controles do cadastro, login, confirmação de e-mail e recuperação de senha.
 const accountMessage = document.getElementById('accountMessage');
 const registrationForm = document.getElementById('CadastroSite');
 const loginForm = document.getElementById('EntrarPainel');
 const resendButton = document.getElementById('resendVerification');
 
 function showAccountMessage(message, isError = false) {
+    // Exibe retorno da API na página e marca visualmente mensagens de erro.
     if (!accountMessage) return;
     accountMessage.textContent = message;
     accountMessage.classList.toggle('error', isError);
 }
 
 function setFormMode(mode) {
+    // Mantém apenas um formulário visível e move a linha indicadora da aba.
     const entering = mode === 'login';
     loginForm.style.display = entering ? 'grid' : 'none';
     registrationForm.style.display = entering ? 'none' : 'grid';
@@ -18,6 +21,7 @@ function setFormMode(mode) {
     showAccountMessage('');
 }
 
+// Funções globais chamadas pelos controles de aba declarados no HTML.
 window.mostrarEntrar = () => setFormMode('login');
 window.mostrarCadastro = () => setFormMode('register');
 
@@ -29,6 +33,7 @@ document.getElementById('tabCadastro')?.addEventListener('keydown', (event) => {
 });
 
 async function postJson(url, payload) {
+    // Padroniza POSTs JSON: converte a resposta e transforma HTTP de erro em exceção.
     const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -40,6 +45,7 @@ async function postJson(url, payload) {
 }
 
 registrationForm?.addEventListener('submit', async (event) => {
+    // Envia os dados do formulário de cadastro sem recarregar a página.
     event.preventDefault();
     const fields = new FormData(registrationForm);
     const payload = Object.fromEntries(fields.entries());
@@ -53,6 +59,7 @@ registrationForm?.addEventListener('submit', async (event) => {
 });
 
 loginForm?.addEventListener('submit', async (event) => {
+    // Autentica o cliente; o evento customizado avisa os outros scripts da sessão.
     event.preventDefault();
     const fields = new FormData(loginForm);
     try {
@@ -67,6 +74,7 @@ loginForm?.addEventListener('submit', async (event) => {
 });
 
 resendButton?.addEventListener('click', async () => {
+    // Reenvia a confirmação para uma conta pendente após conferir CPF/e-mail e senha.
     const identifier = loginForm.elements.identifier.value.trim();
     const password = loginForm.elements.password.value;
     try {
@@ -79,6 +87,7 @@ resendButton?.addEventListener('click', async () => {
 });
 
 const verificationToken = new URLSearchParams(window.location.search).get('verificar');
+// Um link de confirmação usa ?verificar=...; após validar, remove o token da barra.
 if (verificationToken) {
     postJson('/api/auth/verify-email', { token: verificationToken })
         .then((result) => {
@@ -90,6 +99,7 @@ if (verificationToken) {
 }
 
 if (registrationForm) {
+    // Formata o telefone para leitura; o servidor ainda valida os dígitos enviados.
     document.getElementById('telefone')?.addEventListener('input', (event) => {
         const digits = event.target.value.replace(/\D/g, '').slice(0, 11);
         const area = digits.slice(0, 2);
@@ -102,6 +112,7 @@ if (registrationForm) {
 
 if (registrationForm && loginForm) setFormMode('login');
 
+// Recupera a sessão já existente ao abrir ou atualizar a página.
 fetch('/api/auth/me')
     .then((response) => response.ok ? response.json() : null)
     .then((result) => {
@@ -118,6 +129,7 @@ const recoveryForm = document.getElementById('RecuperarSenha');
 const resetForm = document.getElementById('ResetarSenha');
 const resetToken = new URLSearchParams(window.location.search).get('token');
 
+// A página mostra o pedido de link ou, se houver token, o formulário da senha nova.
 if (recoveryForm) {
     if (resetToken) {
         recoveryForm.hidden = true;
@@ -137,6 +149,7 @@ if (recoveryForm) {
 }
 
 if (resetForm) {
+    // Envia a senha nova junto ao token temporário recebido por e-mail.
     resetForm.addEventListener('submit', async (event) => {
         event.preventDefault();
         const password = new FormData(resetForm).get('password');

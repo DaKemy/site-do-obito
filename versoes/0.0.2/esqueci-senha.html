@@ -1,3 +1,4 @@
+<!-- Tela de recuperação; login.js escolhe entre pedir o link e definir a nova senha. -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -8,6 +9,7 @@
 </head>
 <body>
     <main>
+        <!-- Formulários da recuperação, preenchidos e processados pelo login.js. -->
         <section class="section form-section">
             <div class="container form-box">
                 <div class="form-copy">
@@ -16,10 +18,12 @@
                     <p>Enviaremos um link de redefinição para o e-mail confirmado da sua conta.</p>
                 </div>
                 <div class="formulario">
+                    <!-- Solicita um link temporário usando o e-mail cadastrado. -->
                     <form id="RecuperarSenha" class="lead-form2">
                         <input type="email" name="email" placeholder="Digite seu e-mail" autocomplete="email" required>
                         <button type="submit" class="btn btn-primary">Enviar link</button>
                     </form>
+                    <!-- Só aparece quando o link da mensagem contém um token válido. -->
                     <form id="ResetarSenha" class="lead-form2" hidden>
                         <input type="password" name="password" placeholder="Nova senha (mín. 8 caracteres)" minlength="8" autocomplete="new-password" required>
                         <button type="submit" class="btn btn-primary">Salvar nova senha</button>
