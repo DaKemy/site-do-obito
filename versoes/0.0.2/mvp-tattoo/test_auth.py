@@ -127,6 +127,11 @@ class AccountFlowTests(unittest.TestCase):
         response = self.client.post('/api/auth/register', json=duplicate)
         self.assertEqual(response.status_code, 409)
 
+        customer_cannot_use_developer_login = self.client.post('/api/admin/login', json={
+            'username': self.registration['email'],
+            'password': self.registration['password'],
+        })
+        self.assertEqual(customer_cannot_use_developer_login.status_code, 401)
         unauthorized = self.client.get('/api/admin/customers')
         self.assertEqual(unauthorized.status_code, 401)
         admin_login = self.client.post('/api/admin/login', json={
@@ -134,11 +139,152 @@ class AccountFlowTests(unittest.TestCase):
             'password': 'test-admin-password',
         })
         self.assertEqual(admin_login.status_code, 200)
+        conn = app_module.get_db()
+        admin_password_hash = conn.execute(
+            'SELECT password_hash FROM developer_admins WHERE username = %s',
+            ('test-admin',),
+        ).fetchone()['password_hash']
+        self.assertNotEqual(admin_password_hash, 'test-admin-password')
+        self.assertTrue(
+            app_module.check_password_hash(admin_password_hash, 'test-admin-password')
+        )
+        conn.close()
         customers = self.client.get('/api/admin/customers').get_json()['customers']
         self.assertEqual(len(customers), 1)
         self.assertNotIn('cpf_hash', customers[0])
         self.assertNotIn('password_hash', customers[0])
         self.assertNotIn('verification_token_hash', customers[0])
+
+    def test_admin_can_edit_reset_and_delete_customer(self):
+        token = self.register_and_verify()
+        self.assertEqual(
+            self.client.post('/api/auth/verify-email', json={'token': token}).status_code,
+            200,
+        )
+        customer_id = self.client.get('/api/auth/me').get_json()['customer']['id']
+        self.assertEqual(
+            self.client.put(
+                f'/api/admin/customers/{customer_id}/password',
+                json={'password': 'nova-senha-segura'},
+            ).status_code,
+            401,
+        )
+        self.assertEqual(
+            self.client.post('/api/admin/login', json={
+                'username': 'test-admin',
+                'password': 'test-admin-password',
+            }).status_code,
+            200,
+        )
+
+        updated = self.client.put(f'/api/admin/customers/{customer_id}', json={
+            'name': 'Nome corrigido',
+            'email': 'corrigido@example.com',
+            'whatsapp': '(41) 98888-7777',
+        })
+        self.assertEqual(updated.status_code, 200)
+        customer = self.client.get('/api/admin/customers').get_json()['customers'][0]
+        self.assertEqual(customer['name'], 'Nome corrigido')
+        self.assertEqual(customer['email'], 'corrigido@example.com')
+        self.assertEqual(customer['whatsapp'], '41988887777')
+        self.assertEqual(customer['email_verified'], 0)
+
+        invalid_password = self.client.put(
+            f'/api/admin/customers/{customer_id}/password',
+            json={'password': 'curta'},
+        )
+        self.assertEqual(invalid_password.status_code, 400)
+        reset = self.client.put(
+            f'/api/admin/customers/{customer_id}/password',
+            json={'password': 'nova-senha-segura'},
+        )
+        self.assertEqual(reset.status_code, 200)
+
+        conn = app_module.get_db()
+        spin_id = conn.execute(
+            'SELECT id FROM customer_spins WHERE customer_id = %s',
+            (customer_id,),
+        ).fetchone()['id']
+        conn.execute(
+            'INSERT INTO tattoo_sessions (customer_id) VALUES (%s)',
+            (customer_id,),
+        )
+        conn.execute(
+            'UPDATE loyalty_progress SET completed_tattoos = 1 WHERE customer_id = %s',
+            (customer_id,),
+        )
+        conn.execute(
+            'INSERT INTO tattoo_requests (customer_id, description) VALUES (%s, %s)',
+            (customer_id, 'Solicitação de teste'),
+        )
+        conn.execute(
+            'INSERT INTO coupons (customer_id, spin_id, code, discount_percent) '
+            'VALUES (%s, %s, %s, %s)',
+            (customer_id, spin_id, 'TESTE-EXCLUSAO', 5),
+        )
+        conn.commit()
+        conn.close()
+
+        deleted = self.client.delete(f'/api/admin/customers/{customer_id}')
+        self.assertEqual(deleted.status_code, 200)
+        missing = self.client.delete(f'/api/admin/customers/{customer_id}')
+        self.assertEqual(missing.status_code, 404)
+        conn = app_module.get_db()
+        remaining_customer = conn.execute(
+            'SELECT COUNT(*) AS count FROM customers WHERE id = %s',
+            (customer_id,),
+        ).fetchone()['count']
+        self.assertEqual(remaining_customer, 0)
+        for table in (
+            'customer_spins',
+            'tattoo_sessions',
+            'loyalty_progress',
+            'tattoo_requests',
+            'coupons',
+        ):
+            remaining = conn.execute(
+                f'SELECT COUNT(*) AS count FROM {table} WHERE customer_id = %s',
+                (customer_id,),
+            ).fetchone()['count']
+            self.assertEqual(remaining, 0, table)
+        conn.close()
+
+    def test_admin_can_manage_prizes_and_public_wheel_settings(self):
+        self.assertEqual(self.client.get('/api/admin/prizes').status_code, 401)
+        self.assertEqual(
+            self.client.post('/api/admin/login', json={
+                'username': 'test-admin',
+                'password': 'test-admin-password',
+            }).status_code,
+            200,
+        )
+        prizes = self.client.get('/api/admin/prizes').get_json()['prizes']
+        prizes_for_update = [
+            {
+                'id': prize['id'],
+                'name': prize['name'],
+                'discountPercent': prize['discount_percent'],
+                'tomoeLevel': prize['tomoe_level'],
+                'probabilityWeight': prize['probability_weight'],
+                'active': bool(prize['active']),
+            }
+            for prize in prizes
+        ]
+        prizes_for_update[0]['name'] = 'Desconto especial'
+        prizes_for_update[0]['discountPercent'] = 12.5
+        prizes_for_update[0]['probabilityWeight'] = 20
+        saved = self.client.put('/api/admin/prizes', json={'prizes': prizes_for_update})
+        self.assertEqual(saved.status_code, 200)
+
+        public_prizes = self.client.get('/api/prizes').get_json()['prizes']
+        self.assertEqual(public_prizes[0]['name'], 'Desconto especial')
+        self.assertEqual(public_prizes[0]['discount_percent'], 12.5)
+        self.assertEqual(public_prizes[0]['probability_weight'], 20)
+
+        for prize in prizes_for_update:
+            prize['active'] = False
+        invalid = self.client.put('/api/admin/prizes', json={'prizes': prizes_for_update})
+        self.assertEqual(invalid.status_code, 400)
 
     def test_tattoo_request_and_loyalty_milestone(self):
         token = self.register_and_verify()
@@ -242,6 +388,10 @@ class AccountFlowTests(unittest.TestCase):
         assets = self.client.get('/mvp-assets/app.js')
         self.assertEqual(assets.status_code, 200)
         assets.close()
+        admin_script = self.client.get('/admin.js')
+        self.assertEqual(admin_script.status_code, 200)
+        admin_script.close()
+        self.assertEqual(self.client.get('/api/prizes').status_code, 200)
         self.assertEqual(self.client.get('/mvp-tattoo/data.sqlite').status_code, 404)
 
 

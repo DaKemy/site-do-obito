@@ -11,6 +11,9 @@ servidor e entender as variáveis exigidas.
 ## Componentes
 
 - `app.py`: rotas Flask, autenticação, regras de fidelidade e conexão PostgreSQL.
+- `manage_admin.py`: criação e redefinição segura de contas administrativas.
+- As rotas administrativas protegidas permitem gerenciar contas, redefinir
+  senhas e atualizar as configurações dos prêmios da roleta.
 - `public/`: recursos estáticos remanescentes do painel antigo; não há mais uma
   página HTML do painel.
 - `requirements.txt`: dependências Python.

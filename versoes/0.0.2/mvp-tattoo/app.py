@@ -42,9 +42,9 @@ ADMIN_USERNAME = os.environ.get('ADMIN_USERNAME')
 ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD')
 CPF_HASH_SECRET = os.environ.get('CPF_HASH_SECRET')
 
-if not app.secret_key or not ADMIN_USERNAME or not ADMIN_PASSWORD or not CPF_HASH_SECRET:
+if not app.secret_key or not CPF_HASH_SECRET:
     raise RuntimeError(
-        'Set FLASK_SECRET_KEY, ADMIN_USERNAME, ADMIN_PASSWORD, and CPF_HASH_SECRET environment variables.'
+        'Set FLASK_SECRET_KEY and CPF_HASH_SECRET environment variables.'
     )
 
 
@@ -65,6 +65,9 @@ class PostgresConnection:
     def commit(self):
         self.connection.commit()
 
+    def rollback(self):
+        self.connection.rollback()
+
     def close(self):
         self.connection.close()
 
@@ -80,7 +83,7 @@ def get_db():
 def admin_required(view):
     @wraps(view)
     def wrapped(*args, **kwargs):
-        if not session.get('admin_logged_in'):
+        if session.get('admin_role') != 'developer':
             return jsonify({'error': 'Sem autorização de administrador.'}), 401
         return view(*args, **kwargs)
     return wrapped
@@ -179,6 +182,13 @@ def init_db():
             password_reset_token_hash TEXT,
             password_reset_expires_at TIMESTAMPTZ
         )""",
+        """CREATE TABLE IF NOT EXISTS developer_admins (
+            id SERIAL PRIMARY KEY,
+            username TEXT UNIQUE NOT NULL,
+            password_hash TEXT NOT NULL,
+            role TEXT NOT NULL DEFAULT 'developer',
+            created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )""",
         """CREATE TABLE IF NOT EXISTS reward_prizes (
             id SERIAL PRIMARY KEY,
             name TEXT NOT NULL,
@@ -275,6 +285,15 @@ def init_db():
         "CREATE UNIQUE INDEX IF NOT EXISTS idx_customers_cpf_hash ON customers(cpf_hash) "
         "WHERE cpf_hash IS NOT NULL AND cpf_hash <> ''"
     )
+    if ADMIN_USERNAME and ADMIN_PASSWORD:
+        conn.execute(
+            'INSERT INTO developer_admins (username, password_hash) '
+            'SELECT %s, %s WHERE NOT EXISTS (SELECT 1 FROM developer_admins)',
+            (
+                ADMIN_USERNAME.strip().lower(),
+                generate_password_hash(ADMIN_PASSWORD),
+            ),
+        )
     conn.commit()
     conn.close()
 
@@ -334,7 +353,7 @@ def pick_weighted_prize():
 
 @app.route('/uploads/<path:filename>')
 def uploaded_file(filename):
-    if not session.get('admin_logged_in') and not session.get('customer_id'):
+    if session.get('admin_role') != 'developer' and not session.get('customer_id'):
         return jsonify({'error': 'Entre na sua conta para acessar este arquivo.'}), 401
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
@@ -344,19 +363,38 @@ def health():
     return jsonify({'ok': True, 'message': 'Tattoo MVP online'})
 
 
+@app.route('/api/prizes', methods=['GET'])
+def public_prizes():
+    conn = get_db()
+    prizes = conn.execute(
+        'SELECT id, name, discount_percent, tomoe_level, probability_weight '
+        'FROM reward_prizes WHERE active = 1 ORDER BY id'
+    ).fetchall()
+    conn.close()
+    return jsonify({'prizes': [dict(prize) for prize in prizes]})
+
+
 @app.route('/api/admin/login', methods=['POST'])
 def admin_login():
     payload = request.get_json(silent=True) or {}
-    username = str(payload.get('username') or '').strip()
+    username = str(payload.get('username') or '').strip().lower()
     password = payload.get('password') or ''
     if not isinstance(password, str):
         return jsonify({'error': 'Credenciais inválidas.'}), 401
 
-    if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
+    conn = get_db()
+    admin = conn.execute(
+        "SELECT id, username, password_hash, role FROM developer_admins "
+        "WHERE username = %s AND role = 'developer'",
+        (username,),
+    ).fetchone()
+    conn.close()
+    if admin and check_password_hash(admin['password_hash'], password):
         session.clear()
-        session['admin_logged_in'] = True
-        session['admin_user'] = username
-        return jsonify({'ok': True, 'user': username})
+        session['admin_user_id'] = admin['id']
+        session['admin_user'] = admin['username']
+        session['admin_role'] = admin['role']
+        return jsonify({'ok': True, 'user': admin['username']})
 
     return jsonify({'error': 'Credenciais inválidas.'}), 401
 
@@ -369,7 +407,7 @@ def admin_logout():
 
 @app.route('/api/admin/me', methods=['GET'])
 def admin_me():
-    if not session.get('admin_logged_in'):
+    if session.get('admin_role') != 'developer':
         return jsonify({'error': 'Não autenticado.'}), 401
     return jsonify({'ok': True, 'user': session.get('admin_user')})
 
@@ -750,12 +788,211 @@ def roll_spin():
 def admin_customers():
     conn = get_db()
     customers = conn.execute(
-        'SELECT id, name, whatsapp, email, created_at FROM customers ORDER BY created_at DESC'
+        'SELECT id, name, whatsapp, email, email_verified, created_at '
+        'FROM customers ORDER BY created_at DESC'
     ).fetchall()
     sessions = conn.execute('SELECT * FROM tattoo_sessions ORDER BY created_at DESC').fetchall()
     requests = conn.execute('SELECT * FROM tattoo_requests ORDER BY created_at DESC').fetchall()
     conn.close()
     return jsonify({'customers': [dict(row) for row in customers], 'sessions': [dict(row) for row in sessions], 'requests': [dict(row) for row in requests]})
+
+
+@app.route('/api/admin/customers/<int:customer_id>', methods=['PUT'])
+@admin_required
+def admin_update_customer(customer_id):
+    payload = request.get_json(silent=True) or {}
+    name = str(payload.get('name') or '').strip()
+    whatsapp = re.sub(r'\D', '', str(payload.get('whatsapp') or ''))
+    email = str(payload.get('email') or '').strip().lower() or None
+    if not name or len(name) > 120 or len(whatsapp) not in (10, 11):
+        return jsonify({'error': 'Informe nome e telefone com DDD válidos.'}), 400
+    if email and not re.fullmatch(r'[^@\s]+@[^@\s]+\.[^@\s]+', email):
+        return jsonify({'error': 'Informe um e-mail válido.'}), 400
+
+    conn = get_db()
+    current = conn.execute(
+        'SELECT id, email FROM customers WHERE id = %s',
+        (customer_id,),
+    ).fetchone()
+    if not current:
+        conn.close()
+        return jsonify({'error': 'Cliente não encontrado.'}), 404
+
+    email_changed = current['email'] != email
+    try:
+        conn.execute(
+            'UPDATE customers SET name = %s, whatsapp = %s, email = %s, '
+            'email_verified = CASE WHEN %s THEN 0 ELSE email_verified END, '
+            'verification_token_hash = CASE WHEN %s THEN NULL ELSE verification_token_hash END, '
+            'verification_expires_at = CASE WHEN %s THEN NULL ELSE verification_expires_at END, '
+            'password_reset_token_hash = CASE WHEN %s THEN NULL ELSE password_reset_token_hash END, '
+            'password_reset_expires_at = CASE WHEN %s THEN NULL ELSE password_reset_expires_at END '
+            'WHERE id = %s',
+            (
+                name, whatsapp, email, email_changed, email_changed, email_changed,
+                email_changed, email_changed, customer_id,
+            ),
+        )
+        conn.commit()
+    except psycopg2.errors.UniqueViolation:
+        conn.rollback()
+        conn.close()
+        return jsonify({'error': 'Este telefone ou e-mail já pertence a outra conta.'}), 409
+    conn.close()
+    return jsonify({'ok': True, 'message': 'Dados do cliente atualizados.'})
+
+
+@app.route('/api/admin/customers/<int:customer_id>/password', methods=['PUT'])
+@admin_required
+def admin_reset_customer_password(customer_id):
+    payload = request.get_json(silent=True) or {}
+    password = payload.get('password')
+    if not isinstance(password, str) or not 8 <= len(password) <= 128:
+        return jsonify({'error': 'A nova senha deve ter entre 8 e 128 caracteres.'}), 400
+
+    conn = get_db()
+    result = conn.execute(
+        'UPDATE customers SET password_hash = %s, password_reset_token_hash = NULL, '
+        'password_reset_expires_at = NULL WHERE id = %s',
+        (generate_password_hash(password), customer_id),
+    )
+    if result.rowcount == 0:
+        conn.close()
+        return jsonify({'error': 'Cliente não encontrado.'}), 404
+    conn.commit()
+    conn.close()
+    return jsonify({'ok': True, 'message': 'Senha do cliente redefinida.'})
+
+
+@app.route('/api/admin/customers/<int:customer_id>', methods=['DELETE'])
+@admin_required
+def admin_delete_customer(customer_id):
+    conn = get_db()
+    customer = conn.execute(
+        'SELECT id FROM customers WHERE id = %s',
+        (customer_id,),
+    ).fetchone()
+    if not customer:
+        conn.close()
+        return jsonify({'error': 'Cliente não encontrado.'}), 404
+
+    requests = conn.execute(
+        'SELECT reference_image_url FROM tattoo_requests WHERE customer_id = %s',
+        (customer_id,),
+    ).fetchall()
+    image_paths = set()
+    for tattoo_request in requests:
+        image_url = tattoo_request['reference_image_url'] or ''
+        if image_url.startswith('/uploads/'):
+            filename = image_url[len('/uploads/'):]
+            image_path = UPLOAD_FOLDER / filename
+            if filename and Path(filename).name == filename and image_path.resolve().parent == UPLOAD_FOLDER.resolve():
+                image_paths.add(image_path)
+
+    conn.execute(
+        'DELETE FROM coupons WHERE customer_id = %s OR spin_id IN '
+        '(SELECT id FROM customer_spins WHERE customer_id = %s)',
+        (customer_id, customer_id),
+    )
+    conn.execute('DELETE FROM tattoo_requests WHERE customer_id = %s', (customer_id,))
+    conn.execute('DELETE FROM tattoo_sessions WHERE customer_id = %s', (customer_id,))
+    conn.execute('DELETE FROM loyalty_progress WHERE customer_id = %s', (customer_id,))
+    conn.execute('DELETE FROM customer_spins WHERE customer_id = %s', (customer_id,))
+    conn.execute('DELETE FROM customers WHERE id = %s', (customer_id,))
+    conn.commit()
+    conn.close()
+
+    failed_image_deletions = 0
+    for image_path in image_paths:
+        try:
+            image_path.unlink()
+        except FileNotFoundError:
+            continue
+        except OSError as error:
+            app.logger.error('Falha ao remover imagem de referência do cliente excluído: %s', error)
+            failed_image_deletions += 1
+    if failed_image_deletions:
+        return jsonify({
+            'error': (
+                'A conta foi excluída, mas não foi possível remover '
+                f'{failed_image_deletions} imagem(ns) de referência.'
+            )
+        }), 500
+    return jsonify({'ok': True, 'message': 'Cliente e dados associados foram excluídos.'})
+
+
+@app.route('/api/admin/prizes', methods=['GET'])
+@admin_required
+def admin_prizes():
+    conn = get_db()
+    prizes = conn.execute(
+        'SELECT id, name, discount_percent, tomoe_level, probability_weight, active '
+        'FROM reward_prizes ORDER BY id'
+    ).fetchall()
+    conn.close()
+    return jsonify({'prizes': [dict(prize) for prize in prizes]})
+
+
+@app.route('/api/admin/prizes', methods=['PUT'])
+@admin_required
+def admin_update_prizes():
+    payload = request.get_json(silent=True) or {}
+    prizes = payload.get('prizes')
+    if not isinstance(prizes, list) or not prizes:
+        return jsonify({'error': 'Informe a lista de prêmios.'}), 400
+
+    normalized = []
+    seen_ids = set()
+    for prize in prizes:
+        if not isinstance(prize, dict):
+            return jsonify({'error': 'Cada prêmio deve ser um objeto válido.'}), 400
+        prize_id = prize.get('id')
+        name = str(prize.get('name') or '').strip()
+        discount = prize.get('discountPercent')
+        weight = prize.get('probabilityWeight')
+        tomoe = prize.get('tomoeLevel')
+        active = prize.get('active')
+        if (
+            not isinstance(prize_id, int)
+            or isinstance(prize_id, bool)
+            or prize_id in seen_ids
+            or not name
+            or len(name) > 80
+            or not isinstance(discount, (int, float))
+            or isinstance(discount, bool)
+            or not 0 < discount <= 100
+            or not isinstance(weight, int)
+            or isinstance(weight, bool)
+            or not 1 <= weight <= 10000
+            or not isinstance(tomoe, int)
+            or isinstance(tomoe, bool)
+            or not 1 <= tomoe <= 3
+            or not isinstance(active, bool)
+        ):
+            return jsonify({'error': 'Revise nome, desconto, peso e nível de tomoe dos prêmios.'}), 400
+        seen_ids.add(prize_id)
+        normalized.append((name, float(discount), tomoe, weight, int(active), prize_id))
+
+    if not any(prize[4] for prize in normalized):
+        return jsonify({'error': 'Mantenha pelo menos um prêmio ativo.'}), 400
+
+    conn = get_db()
+    existing_ids = {
+        row['id']
+        for row in conn.execute('SELECT id FROM reward_prizes').fetchall()
+    }
+    if seen_ids != existing_ids:
+        conn.close()
+        return jsonify({'error': 'A lista deve conter todos os prêmios existentes, sem duplicatas.'}), 400
+
+    conn.executemany(
+        'UPDATE reward_prizes SET name = %s, discount_percent = %s, '
+        'tomoe_level = %s, probability_weight = %s, active = %s WHERE id = %s',
+        normalized,
+    )
+    conn.commit()
+    conn.close()
+    return jsonify({'ok': True, 'message': 'Configurações da roleta salvas.'})
 
 
 @app.route('/api/tattoos/request', methods=['POST'])
@@ -884,7 +1121,10 @@ def mvp_assets(filename):
 def web_file(filename):
     if filename.startswith('assets/'):
         return send_from_directory(str(WEB_ROOT), filename)
-    if filename not in {'styles.css', 'login.js', 'script.js', 'njnaruto.ttf', 'esqueci-senha.html', 'guia.html'}:
+    if filename not in {
+        'styles.css', 'login.js', 'script.js', 'admin.js', 'njnaruto.ttf',
+        'esqueci-senha.html', 'guia.html',
+    }:
         abort(404)
     return send_from_directory(str(WEB_ROOT), filename)
 
