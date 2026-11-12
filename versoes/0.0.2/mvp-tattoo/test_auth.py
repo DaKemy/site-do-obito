@@ -1,3 +1,4 @@
+"""Testes de integração das contas, permissões, roleta e fidelidade."""
 import os
 import re
 import unittest
@@ -19,6 +20,8 @@ import app as app_module
 
 
 class AccountFlowTests(unittest.TestCase):
+    """Executa cada caso em um schema PostgreSQL temporário e isolado."""
+
     registration = {
         'name': 'Teste Cliente',
         'whatsapp': '(41) 99999-9999',
@@ -28,6 +31,7 @@ class AccountFlowTests(unittest.TestCase):
     }
 
     def setUp(self):
+        """Cria banco isolado para impedir que os testes alterem dados reais."""
         if not app_module.DATABASE_URL:
             self.fail('Set DATABASE_URL in the project .env before running database tests.')
         self.schema = f'test_auth_{uuid.uuid4().hex}'
@@ -52,6 +56,7 @@ class AccountFlowTests(unittest.TestCase):
         self.client = app_module.app.test_client()
 
     def get_test_db(self):
+        """Abre conexão apontada ao schema temporário desta execução."""
         connection = psycopg2.connect(
             self.test_database_url,
             cursor_factory=RealDictCursor,
@@ -60,6 +65,7 @@ class AccountFlowTests(unittest.TestCase):
         return app_module.PostgresConnection(connection)
 
     def drop_test_schema(self):
+        """Remove ao final o schema criado pelo teste."""
         with self.admin_connection.cursor() as cursor:
             cursor.execute(
                 sql.SQL('DROP SCHEMA IF EXISTS {} CASCADE').format(
@@ -69,6 +75,7 @@ class AccountFlowTests(unittest.TestCase):
         self.admin_connection.close()
 
     def register_and_verify(self):
+        """Cadastra cliente com envio de e-mail simulado e devolve o token."""
         with patch.object(app_module, 'send_account_email') as send_email:
             response = self.client.post('/api/auth/register', json=self.registration)
         self.assertEqual(response.status_code, 202)
@@ -78,11 +85,13 @@ class AccountFlowTests(unittest.TestCase):
         return token
 
     def test_cpf_checksum(self):
+        """Confere CPF válido, sequência repetida e dígito verificador incorreto."""
         self.assertTrue(app_module.valid_cpf('529.982.247-25'))
         self.assertFalse(app_module.valid_cpf('111.111.111-11'))
         self.assertFalse(app_module.valid_cpf('529.982.247-24'))
 
     def test_registration_verification_login_and_spin(self):
+        """Percorre cadastro, proteção dos dados, confirmação, login e giro."""
         invalid = dict(self.registration, cpf='52998224724')
         response = self.client.post('/api/auth/register', json=invalid)
         self.assertEqual(response.status_code, 400)
@@ -122,6 +131,7 @@ class AccountFlowTests(unittest.TestCase):
         self.assertEqual(self.client.post('/api/spins/roll', json={}).status_code, 400)
 
     def test_duplicate_registration_and_admin_data_minimization(self):
+        """Confere duplicidade, separação de papéis e minimização de dados."""
         self.register_and_verify()
         duplicate = dict(self.registration, email='other@example.com', whatsapp='41988887777')
         response = self.client.post('/api/auth/register', json=duplicate)
@@ -156,6 +166,7 @@ class AccountFlowTests(unittest.TestCase):
         self.assertNotIn('verification_token_hash', customers[0])
 
     def test_admin_can_edit_reset_and_delete_customer(self):
+        """Confere edição, redefinição e exclusão protegidas por sessão admin."""
         token = self.register_and_verify()
         self.assertEqual(
             self.client.post('/api/auth/verify-email', json={'token': token}).status_code,
@@ -250,6 +261,7 @@ class AccountFlowTests(unittest.TestCase):
         conn.close()
 
     def test_admin_can_manage_prizes_and_public_wheel_settings(self):
+        """Confere atualização dos prêmios e validação de ao menos um ativo."""
         self.assertEqual(self.client.get('/api/admin/prizes').status_code, 401)
         self.assertEqual(
             self.client.post('/api/admin/login', json={
@@ -287,6 +299,7 @@ class AccountFlowTests(unittest.TestCase):
         self.assertEqual(invalid.status_code, 400)
 
     def test_tattoo_request_and_loyalty_milestone(self):
+        """Confere pedido de tatuagem e concessão de giro no terceiro marco."""
         token = self.register_and_verify()
         self.assertEqual(
             self.client.post('/api/auth/verify-email', json={'token': token}).status_code,
@@ -333,6 +346,7 @@ class AccountFlowTests(unittest.TestCase):
         self.assertEqual(loyalty['available_spins'], 1)
 
     def test_resend_verification_by_cpf(self):
+        """Confere reenvio da confirmação usando CPF e senha do cliente."""
         self.register_and_verify()
         with patch.object(app_module, 'send_account_email') as send_email:
             response = self.client.post('/api/auth/resend-verification', json={
@@ -348,6 +362,7 @@ class AccountFlowTests(unittest.TestCase):
         )
 
     def test_password_reset_and_static_routes(self):
+        """Confere recuperação, nova senha, páginas públicas e rotas antigas."""
         token = self.register_and_verify()
         self.client.post('/api/auth/verify-email', json={'token': token})
 

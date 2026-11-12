@@ -1,3 +1,9 @@
+"""Backend da versão 0.0.2: páginas web, contas, fidelidade e APIs administrativas.
+
+O navegador envia requisições para estas rotas; aqui são aplicadas as regras,
+validado o acesso e lidos/gravados os dados do PostgreSQL. Segredos são lidos
+das variáveis de ambiente e nunca devem ser escritos neste arquivo.
+"""
 from __future__ import annotations
 
 import json
@@ -26,6 +32,7 @@ from psycopg2.extras import RealDictCursor
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 
+# Caminhos da versão atual: o site público está ao lado de mvp-tattoo.
 BASE_DIR = Path(__file__).resolve().parent
 WEB_ROOT = BASE_DIR.parent
 load_dotenv(WEB_ROOT / '.env')
@@ -53,6 +60,8 @@ if not app.secret_key or not CPF_HASH_SECRET:
 
 
 class PostgresConnection:
+    """Adaptador pequeno para usar cursores PostgreSQL como dicionários."""
+
     def __init__(self, connection):
         self.connection = connection
 
@@ -77,6 +86,7 @@ class PostgresConnection:
 
 
 def get_db():
+    """Abre uma conexão PostgreSQL; falha explicitamente sem DATABASE_URL."""
     if not DATABASE_URL:
         raise RuntimeError('DATABASE_URL must be set in the environment or project .env file.')
     return PostgresConnection(
@@ -85,6 +95,7 @@ def get_db():
 
 
 def admin_required(view):
+    """Impede que visitantes/clientes acessem rotas do desenvolvedor."""
     @wraps(view)
     def wrapped(*args, **kwargs):
         if session.get('admin_role') != 'developer':
@@ -94,6 +105,7 @@ def admin_required(view):
 
 
 def customer_required(view):
+    """Exige sessão de cliente válida e e-mail confirmado antes da rota."""
     @wraps(view)
     def wrapped(*args, **kwargs):
         customer_id = session.get('customer_id')
@@ -113,6 +125,7 @@ def customer_required(view):
 
 
 def valid_cpf(value):
+    """Normaliza e confere os dois dígitos verificadores do CPF informado."""
     cpf = re.sub(r'\D', '', str(value or ''))
     if len(cpf) != 11 or len(set(cpf)) == 1:
         return False
@@ -129,15 +142,18 @@ def valid_cpf(value):
 
 
 def cpf_digest(value):
+    """Gera HMAC do CPF para busca sem armazenar o número em texto puro."""
     normalized = re.sub(r'\D', '', value)
     return hmac.new(CPF_HASH_SECRET.encode(), normalized.encode(), hashlib.sha256).hexdigest()
 
 
 def token_digest(token):
+    """Converte token temporário em hash antes de persistir no banco."""
     return hashlib.sha256(token.encode()).hexdigest()
 
 
 def send_gmail_api_email(recipient, subject, body):
+    """Renova o token OAuth e envia mensagem pelo endpoint HTTPS do Gmail."""
     required_settings = (
         'GMAIL_CLIENT_ID',
         'GMAIL_CLIENT_SECRET',
@@ -199,6 +215,7 @@ def send_gmail_api_email(recipient, subject, body):
 
 
 def send_account_email(recipient, subject, body):
+    """Escolhe Gmail API ou SMTP conforme EMAIL_PROVIDER configurado."""
     provider = os.environ.get('EMAIL_PROVIDER', 'smtp').strip().lower()
     if provider == 'gmail_api':
         return send_gmail_api_email(recipient, subject, body)
@@ -239,6 +256,7 @@ def send_account_email(recipient, subject, body):
 
 
 def init_db():
+    """Cria tabelas/índices necessários e migra campos de conta ausentes."""
     conn = get_db()
     schema_statements = (
         """CREATE TABLE IF NOT EXISTS customers (
@@ -372,6 +390,7 @@ def init_db():
 
 
 def seed_prizes():
+    """Insere prêmios iniciais apenas quando a tabela ainda está vazia."""
     conn = get_db()
     count = conn.execute('SELECT COUNT(*) AS total FROM reward_prizes').fetchone()['total']
     if count > 0:
@@ -396,6 +415,7 @@ def seed_prizes():
 
 
 def customer_summary(customer):
+    """Monta o resumo público de cliente sem incluir CPF ou hash de senha."""
     return {
         'id': customer['id'],
         'whatsapp': customer['whatsapp'],
@@ -405,6 +425,7 @@ def customer_summary(customer):
 
 
 def pick_weighted_prize():
+    """Sorteia um prêmio ativo usando pesos relativos do banco de dados."""
     conn = get_db()
     prizes = conn.execute('SELECT * FROM reward_prizes WHERE active = 1 ORDER BY id').fetchall()
     conn.close()
@@ -424,6 +445,7 @@ def pick_weighted_prize():
     return dict(prizes[0])
 
 
+# ── Recursos enviados: leitura exige sessão de cliente ou desenvolvedor. ──
 @app.route('/uploads/<path:filename>')
 def uploaded_file(filename):
     if session.get('admin_role') != 'developer' and not session.get('customer_id'):
@@ -431,6 +453,7 @@ def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 
+# ── Rotas públicas: disponibilidade do serviço e prêmios ativos da roleta. ──
 @app.route('/api/health')
 def health():
     return jsonify({'ok': True, 'message': 'Tattoo MVP online'})
@@ -447,6 +470,7 @@ def public_prizes():
     return jsonify({'prizes': [dict(prize) for prize in prizes]})
 
 
+# ── Sessão de desenvolvedor: login, validação da sessão e saída. ──
 @app.route('/api/admin/login', methods=['POST'])
 def admin_login():
     payload = request.get_json(silent=True) or {}
@@ -485,6 +509,7 @@ def admin_me():
     return jsonify({'ok': True, 'user': session.get('admin_user')})
 
 
+# ── Conta de cliente: cadastro, confirmação, login e sessão. ──
 @app.route('/api/auth/register', methods=['POST'])
 def auth_register():
     payload = request.get_json(silent=True) or {}
@@ -554,6 +579,7 @@ def auth_register():
 
 @app.route('/api/auth/resend-verification', methods=['POST'])
 def resend_verification():
+    """Reenvia confirmação somente após validar identificador e senha."""
     payload = request.get_json(silent=True) or {}
     identifier = str(payload.get('identifier') or payload.get('email') or '').strip()
     password = payload.get('password') or ''
@@ -607,6 +633,7 @@ def resend_verification():
 
 @app.route('/api/auth/verify-email', methods=['POST'])
 def verify_email():
+    """Valida token com prazo, confirma o e-mail e concede o giro inicial."""
     payload = request.get_json(silent=True) or {}
     token = payload.get('token') or ''
     if not isinstance(token, str) or not token:
@@ -700,6 +727,7 @@ def auth_logout():
 
 @app.route('/api/auth/password-reset', methods=['POST'])
 def request_password_reset():
+    """Cria token temporário e envia instruções de recuperação por e-mail."""
     payload = request.get_json(silent=True) or {}
     email = str(payload.get('email') or '').strip().lower()
     conn = get_db()
@@ -735,6 +763,7 @@ def request_password_reset():
 
 @app.route('/api/auth/reset-password', methods=['POST'])
 def reset_password():
+    """Consome um token ainda válido e substitui o hash da senha do cliente."""
     payload = request.get_json(silent=True) or {}
     token = payload.get('token') or ''
     password = payload.get('password') or ''
@@ -760,6 +789,7 @@ def reset_password():
     return jsonify({'ok': True, 'message': 'Senha alterada. Entre com sua nova senha.'})
 
 
+# ── Perfil e roleta do cliente autenticado. ──
 @app.route('/api/customers/register', methods=['POST'])
 def register_customer():
     return jsonify({'error': 'Use o cadastro com CPF e confirmação de e-mail.'}), 410
@@ -768,6 +798,7 @@ def register_customer():
 @app.route('/api/customers/<int:customer_id>', methods=['GET'])
 @customer_required
 def get_customer(customer_id):
+    """Retorna o perfil e o histórico apenas para o próprio cliente logado."""
     if customer_id != session.get('customer_id'):
         return jsonify({'error': 'Sem autorização.'}), 403
     conn = get_db()
@@ -797,6 +828,7 @@ def get_customer(customer_id):
 @app.route('/api/spins/roll', methods=['POST'])
 @customer_required
 def roll_spin():
+    """Usa uma rodada pendente, registra prêmio/cupom e devolve o resultado."""
     payload = request.get_json(silent=True) or {}
     customer_id = session['customer_id']
     supplied_customer_id = payload.get('customerId')
@@ -856,9 +888,11 @@ def roll_spin():
     })
 
 
+# ── Administração de clientes: todas as rotas abaixo exigem admin_required. ──
 @app.route('/api/admin/customers', methods=['GET'])
 @admin_required
 def admin_customers():
+    """Lista dados de clientes e pedidos para a interface do desenvolvedor."""
     conn = get_db()
     customers = conn.execute(
         'SELECT id, name, whatsapp, email, email_verified, created_at '
@@ -873,6 +907,7 @@ def admin_customers():
 @app.route('/api/admin/customers/<int:customer_id>', methods=['PUT'])
 @admin_required
 def admin_update_customer(customer_id):
+    """Atualiza dados de contato e invalida confirmação se o e-mail mudar."""
     payload = request.get_json(silent=True) or {}
     name = str(payload.get('name') or '').strip()
     whatsapp = re.sub(r'\D', '', str(payload.get('whatsapp') or ''))
@@ -918,6 +953,7 @@ def admin_update_customer(customer_id):
 @app.route('/api/admin/customers/<int:customer_id>/password', methods=['PUT'])
 @admin_required
 def admin_reset_customer_password(customer_id):
+    """Redefine a senha do cliente guardando apenas seu hash seguro."""
     payload = request.get_json(silent=True) or {}
     password = payload.get('password')
     if not isinstance(password, str) or not 8 <= len(password) <= 128:
@@ -940,6 +976,7 @@ def admin_reset_customer_password(customer_id):
 @app.route('/api/admin/customers/<int:customer_id>', methods=['DELETE'])
 @admin_required
 def admin_delete_customer(customer_id):
+    """Remove a conta e os registros/arquivos vinculados ao cliente."""
     conn = get_db()
     customer = conn.execute(
         'SELECT id FROM customers WHERE id = %s',
@@ -994,6 +1031,7 @@ def admin_delete_customer(customer_id):
     return jsonify({'ok': True, 'message': 'Cliente e dados associados foram excluídos.'})
 
 
+# ── Administração de prêmios: validação e persistência das regras da roleta. ──
 @app.route('/api/admin/prizes', methods=['GET'])
 @admin_required
 def admin_prizes():
@@ -1009,6 +1047,7 @@ def admin_prizes():
 @app.route('/api/admin/prizes', methods=['PUT'])
 @admin_required
 def admin_update_prizes():
+    """Valida e salva a lista completa, exigindo pelo menos um prêmio ativo."""
     payload = request.get_json(silent=True) or {}
     prizes = payload.get('prizes')
     if not isinstance(prizes, list) or not prizes:
@@ -1068,9 +1107,11 @@ def admin_update_prizes():
     return jsonify({'ok': True, 'message': 'Configurações da roleta salvas.'})
 
 
+# ── Pedidos de tatuagem e fidelidade por marcos de três sessões aprovadas. ──
 @app.route('/api/tattoos/request', methods=['POST'])
 @customer_required
 def create_tattoo_request():
+    """Registra uma ideia do cliente e, se enviada, salva imagem de referência."""
     customer_id = session['customer_id']
     description = ''
     payload = request.get_json(silent=True) or {}
@@ -1120,6 +1161,7 @@ def create_tattoo_request():
 @app.route('/api/tattoos/approve', methods=['POST'])
 @admin_required
 def approve_tattoo():
+    """Aprova uma tatuagem e concede uma rodada a cada três conclusões."""
     payload = request.get_json(silent=True) or {}
     customer_id = payload.get('customerId')
     if not customer_id:
@@ -1164,6 +1206,7 @@ def approve_tattoo():
 @app.route('/api/customers/<int:customer_id>/loyalty', methods=['GET'])
 @customer_required
 def get_loyalty(customer_id):
+    """Devolve o progresso de fidelidade do próprio cliente autenticado."""
     if customer_id != session.get('customer_id'):
         return jsonify({'error': 'Sem autorização.'}), 403
     conn = get_db()
@@ -1174,24 +1217,29 @@ def get_loyalty(customer_id):
     return jsonify({'loyalty': dict(loyalty)})
 
 
+# ── Entrega de páginas e inicialização local do servidor. ──
 @app.route('/')
 def index():
+    """Entrega a página inicial da versão principal 0.0.2."""
     return send_from_directory(str(WEB_ROOT), 'index.html')
 
 
 @app.route('/mvp')
 @app.route('/mvp/')
 def mvp_index():
+    """Redireciona caminhos antigos do MVP para a página atual."""
     return redirect('/', code=302)
 
 
 @app.route('/mvp-assets/<path:filename>')
 def mvp_assets(filename):
+    """Mantém compatibilidade de URL para arquivos estáticos antigos."""
     return send_from_directory(str(STATIC_DIR), filename)
 
 
 @app.route('/<path:filename>')
 def web_file(filename):
+    """Entrega apenas os arquivos públicos explicitamente permitidos."""
     if filename.startswith('assets/'):
         return send_from_directory(str(WEB_ROOT), filename)
     if filename not in {
@@ -1203,6 +1251,7 @@ def web_file(filename):
 
 
 def run_local():
+    """Prepara banco e prêmios e abre o site ao iniciar em ambiente local."""
     host = os.environ.get('HOST', '127.0.0.1')
     port = int(os.environ.get('PORT', '5000'))
     init_db()

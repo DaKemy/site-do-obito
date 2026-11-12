@@ -1,3 +1,4 @@
+"""Comandos locais para criar contas de desenvolvedor e trocar suas senhas."""
 import argparse
 from getpass import getpass
 
@@ -8,6 +9,7 @@ import app as app_module
 
 
 def read_password():
+    """Lê e confirma a senha sem exibi-la no terminal."""
     password = getpass('Senha administrativa (mínimo 12 caracteres): ')
     confirmation = getpass('Confirme a senha: ')
     if password != confirmation:
@@ -18,6 +20,7 @@ def read_password():
 
 
 def create_admin(username, password):
+    """Cria usuário administrativo armazenando somente o hash da senha."""
     conn = app_module.get_db()
     try:
         conn.execute(
@@ -34,6 +37,7 @@ def create_admin(username, password):
 
 
 def reset_admin_password(username, password):
+    """Atualiza a senha de uma conta existente e exige que ela seja encontrada."""
     conn = app_module.get_db()
     result = conn.execute(
         'UPDATE developer_admins SET password_hash = %s WHERE username = %s',
@@ -47,6 +51,7 @@ def reset_admin_password(username, password):
 
 
 def main():
+    """Interpreta `create` ou `reset-password` e executa a operação escolhida."""
     parser = argparse.ArgumentParser(
         description='Cria ou redefine uma conta do painel do desenvolvedor.'
     )

@@ -1,3 +1,4 @@
+"""Testes sem credenciais reais para envio de e-mail pela Gmail API."""
 import base64
 import io
 import json
@@ -16,6 +17,8 @@ import app as app_module
 
 
 class MockResponse:
+    """Resposta HTTP mínima para simular os endpoints OAuth e Gmail."""
+
     def __init__(self, payload):
         self.payload = json.dumps(payload).encode('utf-8')
 
@@ -30,6 +33,8 @@ class MockResponse:
 
 
 class GmailApiEmailTests(unittest.TestCase):
+    """Valida formato da mensagem, rejeições da API e configuração exigida."""
+
     def setUp(self):
         self.environment = patch.dict(os.environ, {
             'EMAIL_PROVIDER': 'gmail_api',
@@ -43,6 +48,7 @@ class GmailApiEmailTests(unittest.TestCase):
 
     @patch('app.urllib.request.urlopen')
     def test_sends_message_through_gmail_api(self, urlopen):
+        """Confere troca OAuth, conteúdo da mensagem e chamada de envio."""
         urlopen.side_effect = [
             MockResponse({'access_token': 'access-token'}),
             MockResponse({'id': 'message-id'}),
@@ -85,6 +91,7 @@ class GmailApiEmailTests(unittest.TestCase):
 
     @patch('app.urllib.request.urlopen')
     def test_reports_gmail_api_rejection(self, urlopen):
+        """Garante que rejeições HTTP do Gmail apareçam como erro explícito."""
         urlopen.side_effect = [
             MockResponse({'access_token': 'access-token'}),
             urllib.error.HTTPError(
@@ -104,6 +111,7 @@ class GmailApiEmailTests(unittest.TestCase):
             )
 
     def test_requires_all_gmail_api_settings(self):
+        """Garante que a configuração incompleta não simule envio bem-sucedido."""
         with patch.dict(os.environ, {'GMAIL_REFRESH_TOKEN': ''}):
             with self.assertRaisesRegex(RuntimeError, 'GMAIL_REFRESH_TOKEN'):
                 app_module.send_account_email(
