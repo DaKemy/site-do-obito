@@ -1,8 +1,9 @@
 # Backend — Site do Obito 0.0.2
 
-Este diretório contém a aplicação Flask e os arquivos do painel MVP da versão
-principal 0.0.2. O servidor entrega o site, o painel e as APIs no mesmo
-endereço. O código desta pasta não importa nem serve arquivos da versão 0.0.11.
+Este diretório contém a aplicação Flask e as APIs da versão principal 0.0.2.
+O servidor entrega o site e as APIs no mesmo endereço. A interface HTML antiga
+do painel foi removida; `/mvp` redireciona para a página principal. O código
+desta pasta não importa nem serve arquivos da versão 0.0.11.
 
 Consulte [../README.md](../README.md) para configurar o ambiente, iniciar o
 servidor e entender as variáveis exigidas.
@@ -10,7 +11,8 @@ servidor e entender as variáveis exigidas.
 ## Componentes
 
 - `app.py`: rotas Flask, autenticação, regras de fidelidade e conexão PostgreSQL.
-- `public/`: interface HTML/CSS/JavaScript do painel em `/mvp`.
+- `public/`: recursos estáticos remanescentes do painel antigo; não há mais uma
+  página HTML do painel.
 - `requirements.txt`: dependências Python.
 - `server.js`: iniciador opcional do backend Python usando Node.js.
 - `test_auth.py`: testes do fluxo de contas e giros.

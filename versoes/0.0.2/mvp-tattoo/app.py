@@ -17,7 +17,7 @@ from pathlib import Path
 
 import psycopg2
 from dotenv import load_dotenv
-from flask import Flask, abort, jsonify, request, send_from_directory, session
+from flask import Flask, abort, jsonify, redirect, request, send_from_directory, session
 from psycopg2.extras import RealDictCursor
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
@@ -872,7 +872,7 @@ def index():
 @app.route('/mvp')
 @app.route('/mvp/')
 def mvp_index():
-    return send_from_directory(str(STATIC_DIR), 'index.html')
+    return redirect('/', code=302)
 
 
 @app.route('/mvp-assets/<path:filename>')

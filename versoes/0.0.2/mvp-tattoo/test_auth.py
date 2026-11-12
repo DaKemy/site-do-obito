@@ -230,10 +230,18 @@ class AccountFlowTests(unittest.TestCase):
         })
         self.assertEqual(new_login.status_code, 200)
 
-        for path in ('/', '/mvp', '/esqueci-senha.html'):
+        for path in ('/', '/esqueci-senha.html'):
             response = self.client.get(path)
             self.assertEqual(response.status_code, 200)
             response.close()
+        for path in ('/mvp', '/mvp/'):
+            response = self.client.get(path, follow_redirects=False)
+            self.assertEqual(response.status_code, 302)
+            self.assertEqual(response.headers['Location'], '/')
+            response.close()
+        assets = self.client.get('/mvp-assets/app.js')
+        self.assertEqual(assets.status_code, 200)
+        assets.close()
         self.assertEqual(self.client.get('/mvp-tattoo/data.sqlite').status_code, 404)
 
 
