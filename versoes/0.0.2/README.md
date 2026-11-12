@@ -43,8 +43,9 @@ site em `http://127.0.0.1:5000`. O guia está disponível em
 - `esqueci-senha.html`: solicitação de recuperação e definição de nova senha.
 - `mvp-tattoo/app.py`: API Flask, autenticação, regras de negócio e acesso ao
   PostgreSQL.
-- `mvp-tattoo/public/`: interface e recursos do painel MVP, disponível em
-  `/mvp`.
+- `mvp-tattoo/public/`: recursos estáticos remanescentes do painel antigo. A
+  interface antiga foi removida; `/mvp` agora redireciona para a página
+  principal da versão 0.0.2.
 - `mvp-tattoo/requirements.txt`: dependências Python.
 - `mvp-tattoo/test_auth.py`: testes do fluxo de autenticação e giro.
 - `guia.html`: mapa interativo do projeto e explicações dos fluxos.
