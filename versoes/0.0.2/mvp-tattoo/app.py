@@ -10,10 +10,14 @@ import smtplib
 import threading
 import uuid
 import webbrowser
+import base64
 from datetime import datetime, timedelta, timezone
 from email.message import EmailMessage
 from functools import wraps
 from pathlib import Path
+import urllib.error
+import urllib.request
+from urllib.parse import urlencode
 
 import psycopg2
 from dotenv import load_dotenv
@@ -133,11 +137,80 @@ def token_digest(token):
     return hashlib.sha256(token.encode()).hexdigest()
 
 
+def send_gmail_api_email(recipient, subject, body):
+    required_settings = (
+        'GMAIL_CLIENT_ID',
+        'GMAIL_CLIENT_SECRET',
+        'GMAIL_REFRESH_TOKEN',
+        'GMAIL_FROM',
+    )
+    settings = {name: os.environ.get(name) for name in required_settings}
+    missing_settings = [name for name, value in settings.items() if not value]
+    if missing_settings:
+        raise RuntimeError(
+            'Missing Gmail API settings: ' + ', '.join(missing_settings)
+        )
+
+    token_request = urllib.request.Request(
+        'https://oauth2.googleapis.com/token',
+        data=urlencode({
+            'client_id': settings['GMAIL_CLIENT_ID'],
+            'client_secret': settings['GMAIL_CLIENT_SECRET'],
+            'refresh_token': settings['GMAIL_REFRESH_TOKEN'],
+            'grant_type': 'refresh_token',
+        }).encode('ascii'),
+        headers={'Content-Type': 'application/x-www-form-urlencoded'},
+        method='POST',
+    )
+    try:
+        with urllib.request.urlopen(token_request, timeout=15) as response:
+            token_payload = json.loads(response.read().decode('utf-8'))
+    except urllib.error.HTTPError as error:
+        raise RuntimeError(
+            f'Google OAuth token endpoint returned HTTP {error.code}.'
+        ) from error
+
+    access_token = token_payload.get('access_token')
+    if not isinstance(access_token, str) or not access_token:
+        raise RuntimeError('Google OAuth response did not include an access token.')
+
+    message = EmailMessage()
+    message['Subject'] = subject
+    message['From'] = settings['GMAIL_FROM']
+    message['To'] = recipient
+    message.set_content(body)
+    raw_message = base64.urlsafe_b64encode(message.as_bytes()).decode('ascii')
+    gmail_request = urllib.request.Request(
+        'https://gmail.googleapis.com/gmail/v1/users/me/messages/send',
+        data=json.dumps({'raw': raw_message}).encode('utf-8'),
+        headers={
+            'Authorization': f'Bearer {access_token}',
+            'Content-Type': 'application/json',
+        },
+        method='POST',
+    )
+    try:
+        with urllib.request.urlopen(gmail_request, timeout=15):
+            return
+    except urllib.error.HTTPError as error:
+        raise RuntimeError(
+            f'Gmail API returned HTTP {error.code}.'
+        ) from error
+
+
 def send_account_email(recipient, subject, body):
+    provider = os.environ.get('EMAIL_PROVIDER', 'smtp').strip().lower()
+    if provider == 'gmail_api':
+        return send_gmail_api_email(recipient, subject, body)
+    if provider != 'smtp':
+        raise RuntimeError('EMAIL_PROVIDER must be "gmail_api" or "smtp".')
+
     host = os.environ.get('SMTP_HOST')
     sender = os.environ.get('SMTP_FROM')
     if not host or not sender:
-        raise RuntimeError('Confirme o e-mail somente depois de configurar SMTP_HOST e SMTP_FROM.')
+        raise RuntimeError(
+            'Configure Gmail API credentials or SMTP_HOST and SMTP_FROM.'
+        )
 
     message = EmailMessage()
     message['Subject'] = subject

@@ -18,7 +18,8 @@ servidor e entender as variáveis exigidas.
   página HTML do painel.
 - `requirements.txt`: dependências Python.
 - `server.js`: iniciador opcional do backend Python usando Node.js.
-- `test_auth.py`: testes do fluxo de contas e giros.
+- `test_auth.py` e `test_email.py`: testes do fluxo de contas, giros e envio por
+  API HTTPS do Gmail.
 
 As rotas incluem autenticação, confirmação e recuperação de e-mail, clientes,
 giros, cupons, pedidos de tatuagem, fidelidade e administração.
