@@ -1,0 +1,316 @@
+:root {
+  --bg: #0b0b10;
+  --bg-2: #171923;
+  --panel: rgba(255, 255, 255, 0.04);
+  --line: rgba(255,255,255,0.08);
+  --text: #f4f4f5;
+  --muted: #b6b6c5;
+  --accent: #d9222d;
+  --accent-2: #7a0c1d;
+  --green: #17b38a;
+  --shadow: rgba(0, 0, 0, 0.35);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: radial-gradient(circle at top, rgba(217, 34, 45, 0.15), transparent 30%), var(--bg);
+  color: var(--text);
+}
+
+.container {
+  width: min(1100px, calc(100% - 30px));
+  margin: 0 auto;
+}
+
+.topbar {
+  background: rgba(19, 19, 24, 0.9);
+  border-bottom: 1px solid var(--line);
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 70px;
+}
+
+.brand {
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+.ghost-button,
+button {
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.ghost-button {
+  background: rgba(255,255,255,0.05);
+  color: var(--text);
+  padding: 0.7rem 1rem;
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  padding: 28px;
+  box-shadow: 0 18px 40px var(--shadow);
+}
+
+.hero {
+  margin-top: 30px;
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 24px;
+  align-items: center;
+}
+
+.eyebrow {
+  display: inline-block;
+  background: rgba(217, 34, 45, 0.15);
+  color: #ffb2b6;
+  padding: 0.4rem 0.8rem;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.8rem;
+  margin-bottom: 12px;
+}
+
+.hero h1 {
+  font-size: clamp(2.1rem, 4vw, 3.5rem);
+  line-height: 1.05;
+  margin-bottom: 12px;
+}
+
+.hero p {
+  color: var(--muted);
+  max-width: 560px;
+}
+
+.register-form, .idea-form {
+  display: grid;
+  gap: 12px;
+}
+
+input, textarea {
+  width: 100%;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--line);
+  padding: 0.9rem 1rem;
+  color: var(--text);
+  font-size: 1rem;
+}
+
+input::placeholder, textarea::placeholder {
+  color: #9394a2;
+}
+
+button {
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: white;
+  padding: 0.9rem 1.1rem;
+}
+
+.grid-two {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 24px;
+  margin-top: 28px;
+}
+
+.wheel-panel,
+.loyalty-panel {
+  min-height: 440px;
+}
+
+.wheel-wrap {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 20px 0 16px;
+}
+
+.wheel {
+  position: relative;
+  width: 280px;
+  height: 280px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: conic-gradient(
+    #d9222d 0deg 60deg,
+    #280b17 60deg 120deg,
+    #0f172a 120deg 180deg,
+    #134e4a 180deg 240deg,
+    #7c2d12 240deg 300deg,
+    #3b0764 300deg 360deg
+  );
+  border: 10px solid rgba(255,255,255,0.08);
+  transition: transform 3.2s cubic-bezier(0.18, 0.8, 0.2, 1);
+  box-shadow: inset 0 0 30px rgba(255,255,255,0.08), 0 18px 25px rgba(0,0,0,0.25);
+}
+
+.segment {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  color: #fff;
+}
+
+.segment span {
+  transform: rotate(90deg) translateY(-4px);
+}
+
+.segment-1 { transform: rotate(0deg); }
+.segment-2 { transform: rotate(60deg); }
+.segment-3 { transform: rotate(120deg); }
+.segment-4 { transform: rotate(180deg); }
+.segment-5 { transform: rotate(240deg); }
+.segment-6 { transform: rotate(300deg); }
+
+.wheel-pointer {
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-left: 18px solid transparent;
+  border-right: 18px solid transparent;
+  border-top: 28px solid #f5f5f5;
+  top: -10px;
+  z-index: 3;
+}
+
+.primary-btn {
+  width: 100%;
+  margin-top: 12px;
+}
+
+.result-box {
+  margin-top: 18px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 0.9rem 1rem;
+  color: var(--muted);
+}
+
+#accountStatus {
+  color: var(--muted);
+}
+
+#accountStatus.error {
+  color: #ff8b8b;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+.loyalty-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.loyalty-box {
+  min-height: 70px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--line);
+  color: rgba(255,255,255,0.38);
+  font-size: 1.8rem;
+}
+
+.loyalty-box.filled {
+  background: linear-gradient(135deg, #7a0c1d, #d9222d);
+  color: #fff;
+  box-shadow: 0 0 20px rgba(217,34,45,0.25);
+}
+
+.loyalty-meta {
+  margin-top: 18px;
+  color: var(--muted);
+}
+
+.request-panel, .admin-panel {
+  margin-top: 28px;
+}
+
+.hidden {
+  display: none;
+}
+
+.admin-table {
+  margin-top: 18px;
+  overflow-x: auto;
+}
+
+.admin-table table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 700px;
+}
+
+.admin-table th, .admin-table td {
+  border-bottom: 1px solid var(--line);
+  padding: 10px 8px;
+  text-align: left;
+  color: var(--muted);
+}
+
+.admin-table th {
+  color: var(--text);
+}
+
+.admin-actions {
+  margin-top: 18px;
+}
+
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.admin-login-form {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.ghost-button.small {
+  padding: 0.6rem 0.9rem;
+  font-size: 0.9rem;
+}
+
+.admin-content {
+  margin-top: 18px;
+}
+
+@media (max-width: 860px) {
+  .hero, .grid-two {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 420px) {
+  .wheel {
+    width: min(280px, calc(100vw - 120px));
+    height: min(280px, calc(100vw - 120px));
+  }
+}
