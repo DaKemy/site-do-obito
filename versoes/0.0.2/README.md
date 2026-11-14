@@ -75,6 +75,34 @@ sempre as duas pontas antes de renomeá-lo. Arquivos em `versoes/old/` são
 referências históricas: uma alteração do site ativo deve começar em
 `versoes/0.0.2/`, não numa cópia antiga.
 
+## Preparar o VS Code e colaborar
+
+O repositório fornece recomendações de extensões Python/Pylance e integração
+GitHub em `.vscode/extensions.json`, além de tarefas para iniciar o Flask e
+rodar os testes simulados de e-mail em `.vscode/tasks.json`. Ao abrir esta pasta
+como workspace no VS Code, aceite instalar as extensões recomendadas se desejar.
+
+Para configurar uma cópia local no Windows, use o script
+[`scripts/preparar-colaboradora.ps1`](../../scripts/preparar-colaboradora.ps1)
+na raiz do clone. Ele pode pedir autorização para instalar Git via `winget`,
+clona/atualiza o repositório sem sobrescrever arquivos locais e abre esta
+pasta no VS Code. Execute-o em um PowerShell **local**; o terminal de uma sessão
+Live Share remota não instala ferramentas no computador da convidada.
+
+Cada pessoa deve usar sua própria branch, publicar commits e abrir Pull Request
+para `main`. Isso mantém o histórico e permite revisar mudanças antes de
+integrá-las. Para atualizar a branch principal local sem conflitos:
+
+```powershell
+git pull --ff-only origin main
+```
+
+O GitHub não baixa automaticamente as mudanças de outra pessoa e o Live Share
+não substitui esse fluxo. O VS Code também oferece a tarefa **Site do Obito:
+iniciar Flask** em `Terminal > Run Task`; ela requer dependências Python e um
+`.env` privado configurado. Live Server pode mostrar páginas estáticas, mas não
+atende as APIs do backend.
+
 ### Mapa das páginas e responsabilidades
 
 | Arquivo | O que sua colega encontra nele |
