@@ -7,14 +7,13 @@ equipe de desenvolvimento administrar contas e prêmios.
 
 ## Qual pasta é a versão atual?
 
-**A versão principal é [`versoes/0.0.2`](./versoes/0.0.2/).** As pastas
-`versoes/old/` e `versoes/0.0.11/` são cópias históricas, não o ponto de partida
-para mudanças novas.
+**A versão principal está na raiz do repositório.** Comece por `index.html`,
+`guia.html` e `mvp-tattoo/app.py`. A pasta `old/` contém versões e código
+arquivados; não use esses arquivos para novas alterações.
 
 Para entender a estrutura e acompanhar os fluxos, abra o
-[guia interativo](./versoes/0.0.2/guia.html). As instruções completas de
-instalação, configuração, testes e operação estão no
-[README da versão principal](./versoes/0.0.2/README.md).
+[guia interativo](./guia.html). As instruções de instalação, configuração,
+testes e operação estão neste README.
 
 ## Colaboração no VS Code
 
@@ -28,16 +27,16 @@ orientações do projeto em `.github/copilot-instructions.md`; o prompt
 
 | Parte | Responsabilidade |
 | --- | --- |
-| `versoes/0.0.2/index.html` | Conteúdo da página inicial, roleta, cadastro/login e painel do desenvolvedor. |
-| `versoes/0.0.2/esqueci-senha.html` | Telas para pedir a recuperação e salvar uma senha nova. |
-| `versoes/0.0.2/styles.css` | Cores, tipografia, layout e adaptação para celular. |
-| `versoes/0.0.2/login.js` | Cadastro, login do cliente, confirmação e recuperação de conta. |
-| `versoes/0.0.2/script.js` | Atualização visual da roleta e animação de um resultado escolhido no servidor. |
-| `versoes/0.0.2/admin.js` | Interface do painel exclusivo de desenvolvedor. |
-| `versoes/0.0.2/mvp-tattoo/app.py` | Backend Flask: API, validações, sessões, regras de fidelidade e banco PostgreSQL. |
-| `versoes/0.0.2/mvp-tattoo/manage_admin.py` | Criação de conta administrativa ou redefinição de senha pelo terminal. |
-| `versoes/0.0.2/mvp-tattoo/test_*.py` | Testes de integração da autenticação e testes simulados de e-mail. |
-| `versoes/0.0.2/guia.html` | Mapa pesquisável dos arquivos e tutoriais dos principais fluxos. |
+| `index.html` | Conteúdo da página inicial, roleta, cadastro/login e painel do desenvolvedor. |
+| `esqueci-senha.html` | Telas para pedir a recuperação e salvar uma senha nova. |
+| `styles.css` | Cores, tipografia, layout e adaptação para celular. |
+| `login.js` | Cadastro, login do cliente, confirmação e recuperação de conta. |
+| `script.js` | Atualização visual da roleta e animação de um resultado escolhido no servidor. |
+| `admin.js` | Interface do painel exclusivo de desenvolvedor. |
+| `mvp-tattoo/app.py` | Backend Flask: API, validações, sessões, regras de fidelidade e banco PostgreSQL. |
+| `mvp-tattoo/manage_admin.py` | Criação de conta administrativa ou redefinição de senha pelo terminal. |
+| `mvp-tattoo/test_*.py` | Testes de autenticação e testes simulados de e-mail. |
+| `guia.html` | Mapa pesquisável dos arquivos e tutoriais dos principais fluxos. |
 
 O caminho típico de uma ação é:
 
@@ -56,22 +55,19 @@ HTML (tela) → JavaScript (pedido HTTP) → Flask (validação e regras) → Po
 ## Executar localmente
 
 1. Instale Python 3.10+ e PostgreSQL, ou prepare um banco PostgreSQL de teste.
-2. Na pasta `versoes/0.0.2`, copie `.env.example` para `.env` e preencha as
+2. Na raiz do projeto, copie `.env.example` para `.env` e preencha as
    configurações necessárias. Não substitua uma configuração `.env` já
    existente sem entender seus dados.
 3. No PowerShell, instale e inicie o backend:
 
    ```powershell
-   cd "versoes\0.0.2\mvp-tattoo"
+   cd "mvp-tattoo"
    py -m pip install -r requirements.txt
    py app.py
    ```
 
 4. Abra `http://127.0.0.1:5000`. O guia fica em
    `http://127.0.0.1:5000/guia.html`.
-
-Mais detalhes e configurações de e-mail estão no
-[README da versão principal](./versoes/0.0.2/README.md).
 
 ## Trabalhar em conjunto no GitHub
 
@@ -90,7 +86,7 @@ repositório.
    ```
 
    O script pede confirmação antes de instalar Git pelo `winget`, clona o
-   repositório público em `source\site-do-obito` e abre `versoes\0.0.2` no
+   repositório público em `source\site-do-obito` e abre a raiz do projeto no
    VS Code. Se Git já estiver instalado e o clone existir, só atualiza `main`
    quando não há alterações locais. Ele não apaga arquivos nem envia mudanças.
 2. No VS Code, entre com sua conta GitHub para poder publicar contribuições.
@@ -115,7 +111,7 @@ compartilhe esse arquivo.
 Os testes de e-mail usam chamadas simuladas e não enviam mensagens reais:
 
 ```powershell
-cd "versoes\0.0.2\mvp-tattoo"
+cd "mvp-tattoo"
 py -m unittest test_email -v
 ```
 
@@ -134,8 +130,9 @@ py -m unittest test_auth -v
   código nem neste README.
 - GitHub Pages serve arquivos estáticos e não executa o backend Flask. Para
   login, banco e APIs, hospede o backend em um serviço compatível com Python.
-- Antes de publicar mudanças, confira se está editando `versoes/0.0.2/` e se
-  nenhum arquivo privado foi incluído no envio.
+- Antes de publicar mudanças, confira se está editando os arquivos da raiz e
+  se nenhum arquivo privado foi incluído no envio. `old/legacy-local/` é uma
+  cópia local de segurança e fica excluída do Git.
 
 ## Convenção dos comentários
 

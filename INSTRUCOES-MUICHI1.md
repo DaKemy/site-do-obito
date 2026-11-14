@@ -9,7 +9,7 @@ D:\AsVeizDesenvolve\site-do-obito
 ## Abrir o projeto certo
 
 1. Abra essa pasta no VS Code: **File > Open Folder...**
-2. Para trabalhar no site principal, use a subpasta `versoes\0.0.2`.
+2. Trabalhe diretamente na raiz do clone: a versao principal agora fica nela.
 3. Confirme a instalacao das extensoes recomendadas se o VS Code oferecer.
 4. Abra o Copilot Chat no modo **Agent** e selecione o prompt
    **Preparar Site do Obito (Muichi1)** (ou digite `/` e procure esse nome).
@@ -35,8 +35,8 @@ custom instructions.
 
 O Live Server mostra paginas estaticas, mas nao executa as APIs do backend.
 Para o site completo, o computador precisa de Python, dependencias e
-configuracao privada do banco/servidor. Abra `versoes\0.0.2\README.md` e use o
-prompt do Copilot para verificar o que ja esta pronto.
+configuracao privada do banco/servidor. Abra `README.md` e use o prompt do
+Copilot para verificar o que ja esta pronto.
 
 Nunca sincronizem ou compartilhem `.env`, senhas, tokens, banco local ou
 arquivos enviados por clientes. O Copilot nao deve criar um `.env` verdadeiro

@@ -1,0 +1,433 @@
+<!-- Guia autocontido para localizar arquivos, aprender o fluxo e evitar versões antigas. -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Guia visual da estrutura, dos arquivos e dos fluxos do Site do Obito.">
+    <title>Guia do Site do Obito | Tutorial 0.0.2</title>
+    <style>
+        /* Paleta e tipografia do próprio guia (não são as cores da página principal). */
+        :root {
+            color-scheme: dark;
+            --page: #100d13;
+            --panel: #19151d;
+            --panel-soft: #211b25;
+            --line: #39303d;
+            --text: #f7f1f8;
+            --muted: #bdb1c1;
+            --accent: #ff536d;
+            --accent-soft: #2b1820;
+            --good: #a4e7c4;
+            font-family: "Segoe UI", system-ui, sans-serif;
+        }
+
+        /* Base, cabeçalho fixo e largura de leitura do tutorial. */
+        * { box-sizing: border-box; }
+        html { scroll-behavior: smooth; scroll-padding-top: 88px; }
+        body { margin: 0; background: var(--page); color: var(--text); line-height: 1.65; }
+        a { color: #ff9aab; }
+        button, input { font: inherit; }
+        button { color: inherit; }
+        .top {
+            position: sticky; top: 0; z-index: 5; display: flex; align-items: center;
+            justify-content: space-between; gap: 16px; padding: 13px max(24px, calc((100% - 1160px) / 2));
+            border-bottom: 1px solid var(--line); background: rgba(16, 13, 19, .92); backdrop-filter: blur(16px);
+        }
+        .brand { color: var(--text); font-weight: 800; text-decoration: none; letter-spacing: .01em; }
+        .top-links { display: flex; gap: 22px; align-items: center; }
+        .top-links a { color: var(--muted); font-size: .92rem; text-decoration: none; transition: color .2s ease; }
+        .top-links a:hover { color: white; }
+        .hero { position: relative; max-width: 1160px; margin: 28px auto 0; padding: clamp(30px, 6vw, 68px); border: 1px solid #45313d; border-radius: 26px; background: radial-gradient(ellipse at 82% 0%, rgba(255, 83, 109, .17), transparent 38%), linear-gradient(135deg, #211921, #17131b 65%); overflow: hidden; }
+        .eyebrow { color: #ff9aab; font-size: .75rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+        h1 { max-width: 800px; margin: 10px 0 14px; font-size: clamp(2.2rem, 5vw, 4rem); line-height: 1.08; letter-spacing: -.035em; }
+        h2 { margin: 0 0 14px; font-size: clamp(1.45rem, 2.5vw, 2rem); letter-spacing: -.02em; }
+        h3 { margin: 26px 0 10px; }
+        p { margin: 8px 0 14px; }
+        .intro { max-width: 760px; color: var(--muted); font-size: 1.08rem; }
+        .callout { margin-top: 24px; padding: 15px 18px; border: 1px solid #67404b; border-radius: 13px; background: rgba(43, 24, 32, .78); color: #d7c8d2; font-size: .93rem; }
+        .callout strong { color: #ffd2d9; }
+        .layout { display: block; max-width: 1160px; margin: auto; padding: 24px 0 72px; }
+        main { min-width: 0; }
+        .card { margin-bottom: 18px; padding: clamp(20px, 3.5vw, 34px); border: 1px solid var(--line); border-radius: 20px; background: linear-gradient(145deg, #1b1720, #17131a); }
+        .card p, .card li { color: var(--muted); }
+        .card li + li { margin-top: 7px; }
+        /* Componentes da árvore pesquisável e do painel que descreve o arquivo escolhido. */
+        .index-card { margin-bottom: 26px; padding: clamp(20px, 3.5vw, 32px); border: 1px solid var(--line); border-radius: 20px; background: #19151d; }
+        .index-top { display: flex; align-items: end; justify-content: space-between; gap: 20px; margin-bottom: 18px; }
+        .index-top h2 { margin-bottom: 4px; }
+        .index-top p { margin: 0; color: var(--muted); font-size: .92rem; }
+        .index-count { flex: 0 0 auto; color: #ffabb8; font-size: .85rem; font-weight: 700; }
+        .search-wrap { position: relative; margin-bottom: 18px; }
+        .search-wrap::before { content: "⌕"; position: absolute; top: 7px; left: 14px; color: #ff9aab; font-size: 1.5rem; pointer-events: none; }
+        #fileSearch { width: 100%; padding: 13px 15px 13px 44px; border: 1px solid #4a3c4d; border-radius: 12px; outline: none; background: #100d13; color: var(--text); transition: border-color .2s, box-shadow .2s; }
+        #fileSearch:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(255, 83, 109, .12); }
+        #fileTree { display: grid; gap: 9px; }
+        .tree-group { border: 1px solid var(--line); border-radius: 13px; background: #17131a; overflow: hidden; }
+        .tree-group summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 13px 16px; cursor: pointer; list-style: none; color: #eee5ef; font-size: .94rem; font-weight: 700; }
+        .tree-group summary::-webkit-details-marker { display: none; }
+        .tree-group summary::after { content: "+"; color: #ff9aab; font-size: 1.2rem; font-weight: 400; }
+        .tree-group[open] summary::after { content: "−"; }
+        .tree-group summary:hover { background: #211b25; }
+        .group-count { margin-left: auto; color: #9c8da0; font-size: .79rem; font-weight: 500; }
+        .tree { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; padding: 0 12px 12px; }
+        .tree button { min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 10px 12px; border: 1px solid transparent; border-radius: 10px; background: #211b25; text-align: left; cursor: pointer; transition: border-color .18s, background .18s, transform .18s; }
+        .tree button:hover, .tree button[aria-current="true"] { transform: translateY(-1px); border-color: #68404d; background: #2a202b; }
+        .file-name { color: #f2eaf4; font-family: Consolas, monospace; font-size: .86rem; overflow-wrap: anywhere; }
+        .file-parent { max-width: 100%; color: #938698; font-size: .75rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .empty { padding: 14px; color: var(--muted); font-size: .9rem; }
+        .file-detail { min-height: 150px; margin-top: 16px; padding: 20px; border: 1px solid #4c3946; border-radius: 14px; background: linear-gradient(120deg, #251b25, #19151d); }
+        .file-detail h3 { margin: 0 0 7px; font-size: 1.05rem; }
+        .quick-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+        .quick { min-height: 112px; padding: 15px; border: 1px solid var(--line); border-radius: 13px; background: var(--panel-soft); }
+        .quick strong { display: block; margin-bottom: 5px; }
+        .quick span { color: var(--muted); font-size: .88rem; }
+        .steps { display: grid; gap: 10px; counter-reset: step; }
+        .step { position: relative; padding: 13px 16px 13px 52px; border: 1px solid #322b37; border-radius: 12px; background: #211b25; }
+        .step::before { counter-increment: step; content: counter(step, decimal-leading-zero); position: absolute; left: 15px; top: 12px; color: var(--accent); font-size: .85rem; font-weight: 900; }
+        .step p { margin: 3px 0 0; }
+        .flow { padding: 13px 16px; border-left: 3px solid #ff536d; border-radius: 0 10px 10px 0; color: var(--good); background: #171a1a; font-weight: 700; overflow-wrap: anywhere; }
+        .pill { display: inline-block; margin: 3px 4px 3px 0; padding: 3px 9px; border: 1px solid var(--line); border-radius: 999px; color: #ffd2d9; font-size: .78rem; }
+        .file-path { margin-top: 0; color: #ffabb8 !important; font-family: Consolas, monospace; font-size: .84rem; overflow-wrap: anywhere; }
+        .footer { padding: 24px; border-top: 1px solid var(--line); color: #938698; text-align: center; font-size: .88rem; }
+        code { padding: 2px 6px; border-radius: 5px; background: #100d13; color: #ffd2d9; font-family: Consolas, monospace; overflow-wrap: anywhere; }
+        /* Ajustes responsivos: reduzem colunas e margens em telas menores. */
+        @media (max-width: 900px) {
+            .layout { padding: 20px 22px 56px; }
+            .hero { margin: 18px 22px 0; }
+            .quick-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+        @media (max-width: 560px) {
+            .top { align-items: flex-start; padding: 12px 16px; }
+            .top-links { gap: 12px; font-size: .86rem; }
+            .hero { margin: 14px 14px 0; padding: 28px 22px; }
+            .layout { padding: 16px 14px 44px; }
+            .index-top { align-items: flex-start; flex-direction: column; gap: 8px; }
+            .tree { grid-template-columns: 1fr; }
+            .quick-grid { grid-template-columns: 1fr 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <header class="top">
+        <a class="brand" href="#inicio">◈ Guia do Site do Obito</a>
+        <nav class="top-links" aria-label="Navegação do tutorial">
+            <a href="#trilhas">Tutoriais</a>
+            <a href="#mapa">Mapa de arquivos</a>
+        </nav>
+    </header>
+
+    <!-- Abertura: identifica a versão principal e alerta sobre cópias históricas. -->
+    <section class="hero" id="inicio">
+        <span class="eyebrow">Versão principal · 0.0.2</span>
+        <h1>Conheça a estrutura e os fluxos do projeto.</h1>
+        <p class="intro">Este guia reúne a organização dos arquivos, a função de cada parte e o caminho que os dados percorrem. Use a busca e selecione um arquivo na árvore para consultar sua explicação.</p>
+        <div class="callout"><strong>Versão principal:</strong> a 0.0.2 contém a cópia completa e independente do site, backend, painel e ferramentas. A 0.0.11 foi arquivada como histórico e não é carregada pela 0.0.2. Este guia também é autocontido e está em <code>guia.html</code>.</div>
+    </section>
+
+    <div class="layout">
+        <main>
+            <!-- Índice: busca e seleção de arquivo atualizam o painel de detalhes abaixo. -->
+            <section class="index-card" id="mapa" aria-label="Índice de arquivos do projeto">
+                <div class="index-top">
+                    <div>
+                        <span class="eyebrow">Navegue pelo repositório</span>
+                        <h2>Índice de arquivos</h2>
+                        <p>Expanda uma área ou filtre por nome, tecnologia ou função.</p>
+                    </div>
+                    <span class="index-count" id="fileCount"></span>
+                </div>
+                <div class="search-wrap">
+                    <input id="fileSearch" type="search" placeholder="Buscar: login.js, Neon, autenticação..." autocomplete="off" aria-label="Buscar arquivo ou assunto">
+                </div>
+                <div id="fileTree"></div>
+                <p class="empty" id="noResults" hidden>Nenhum resultado para essa busca.</p>
+                <section class="file-detail" id="arquivoDetalhe" aria-live="polite">
+                    <span class="eyebrow">Detalhes do arquivo</span>
+                    <div id="fileInfo">
+                        <h3>Selecione um item do índice</h3>
+                        <p>O propósito, o papel no fluxo e observações relevantes aparecem aqui.</p>
+                    </div>
+                </section>
+            </section>
+
+            <!-- Resumo da arquitetura para entender qual camada executa cada tarefa. -->
+            <section class="card">
+                <span class="eyebrow">Visão geral</span>
+                <h2>Arquitetura em quatro camadas</h2>
+                <p>As interfaces apresentam os fluxos; JavaScript integra o navegador à API; Flask executa as regras de negócio; o banco persiste contas, giros e cupons. Há versões históricas e uma aplicação legada na raiz, então confira sempre o caminho do arquivo antes de alterar.</p>
+                <div class="quick-grid">
+                    <div class="quick"><strong>Interface · HTML/CSS</strong><span>Estrutura e apresentação da página principal e do painel MVP.</span></div>
+                    <div class="quick"><strong>Cliente · JavaScript</strong><span>Eventos de formulário, chamadas HTTP, mensagens e animação da roleta.</span></div>
+                    <div class="quick"><strong>API · Flask/Python</strong><span>Validação, sessão, autenticação, regras de fidelidade e administração.</span></div>
+                    <div class="quick"><strong>Persistência · PostgreSQL</strong><span>Banco Neon usado pelo backend da versão principal 0.0.2.</span></div>
+                </div>
+            </section>
+
+            <!-- Tutoriais passo a passo seguem dados do HTML até o banco e de volta. -->
+            <section class="card" id="trilhas">
+                <span class="eyebrow">Tutoriais guiados</span>
+                <h2>Como uma ação percorre o projeto</h2>
+
+                <h3>1. Cadastro, confirmação e login</h3>
+                <div class="steps">
+                    <div class="step"><strong>A pessoa preenche o formulário</strong><p><code>versoes/0.0.2/index.html</code> define os campos. O atributo <code>name</code> é a chave que acompanha cada valor enviado.</p></div>
+                    <div class="step"><strong>O JavaScript prepara o envio</strong><p><code>login.js</code> lê os campos, transforma-os em dados JSON e envia <code>POST /api/auth/register</code>. <code>preventDefault()</code> impede o recarregamento normal da página.</p></div>
+                    <div class="step"><strong>O Python confere antes de guardar</strong><p><code>mvp-tattoo/app.py</code> valida nome, telefone, CPF, e-mail e tamanho da senha. Se algo estiver errado, devolve uma mensagem e não conclui o cadastro.</p></div>
+                    <div class="step"><strong>O banco guarda dados protegidos</strong><p>A senha é transformada em hash; o CPF é representado por um HMAC. O servidor envia um e-mail de confirmação. A pessoa confirma pelo link para liberar o primeiro giro.</p></div>
+                    <div class="step"><strong>O login cria uma sessão</strong><p>O servidor confere a senha com o hash guardado. Se estiver correta e o e-mail confirmado, cria uma sessão para reconhecer a pessoa nas próximas ações.</p></div>
+                </div>
+                <p class="flow">HTML → login.js → rota Flask → PostgreSQL → resposta para a página</p>
+
+                <h3>2. Recuperar senha</h3>
+                <div class="steps">
+                    <div class="step"><strong>Pedir o link</strong><p><code>esqueci-senha.html</code> envia o e-mail para <code>POST /api/auth/password-reset</code>.</p></div>
+                    <div class="step"><strong>Abrir a mensagem de e-mail</strong><p>O servidor cria um token temporário e envia um endereço para redefinir a senha. O token expira e não é guardado em texto puro.</p></div>
+                    <div class="step"><strong>Escolher a senha nova</strong><p>A mesma página identifica <code>?token=...</code>, mostra o segundo formulário e envia a senha nova a <code>POST /api/auth/reset-password</code>.</p></div>
+                </div>
+                <p class="flow">esqueci-senha.html → login.js → duas rotas no app.py → banco</p>
+
+                <h3>3. Girar a roleta</h3>
+                <div class="steps">
+                    <div class="step"><strong>O clique pede uma rodada</strong><p><code>script.js</code> envia <code>POST /api/spins/roll</code>. O servidor exige que a pessoa esteja autenticada e tenha uma rodada pendente.</p></div>
+                    <div class="step"><strong>O servidor escolhe e registra o prêmio</strong><p>O backend calcula o prêmio, marca a rodada como usada e cria o cupom. A página não escolhe o desconto.</p></div>
+                    <div class="step"><strong>A animação mostra a resposta</strong><p>O JavaScript lê o segmento retornado pelo servidor, gira a roda e mostra o nome e o percentual do prêmio.</p></div>
+                </div>
+                <p class="flow">Clique → script.js → servidor escolhe/guarda → navegador anima o resultado</p>
+
+                <h3>4. Acompanhar fidelidade e pedidos</h3>
+                <p>O painel MVP é outra interface. Seu HTML fica em <code>mvp-tattoo/public/index.html</code>; seu JavaScript em <code>public/app.js</code>; suas rotas são atendidas pelo Flask. Ele reúne login, roleta, progresso, pedidos de tatuagem e ferramentas administrativas. Na versão principal 0.0.2, o caminho da página é <code>/mvp</code>.</p>
+
+                <h3>5. Rodar e publicar</h3>
+                <ul>
+                    <li>Para desenvolvimento local da versão principal, use as instruções de <code>versoes/0.0.2/README.md</code>.</li>
+                    <li>O Flask serve tanto o site principal quanto APIs e painel. O arquivo <code>server.js</code> é apenas um iniciador alternativo do backend Python.</li>
+                    <li>GitHub Pages serve arquivos estáticos, mas não executa Flask nem conecta o backend privado ao banco. Para a aplicação completa, hospede o backend e configure suas variáveis secretas.</li>
+                    <li>A versão principal 0.0.2 usa o mesmo PostgreSQL/Neon e os dados que já eram usados pela 0.0.11. O banco SQLite da aplicação antiga na raiz é separado.</li>
+                </ul>
+            </section>
+
+            <!-- Contratos entre interface, API e persistência que devem permanecer alinhados. -->
+            <section class="card">
+                <span class="eyebrow">Leitura técnica</span>
+                <h2>Contratos entre camadas</h2>
+                <ul>
+                    <li><strong>Formulários e API:</strong> os atributos <code>name</code> precisam corresponder às chaves consumidas pelas rotas Flask. <code>login.js</code> serializa os campos e trata respostas HTTP.</li>
+                    <li><strong>Rotas e persistência:</strong> o backend usa parâmetros SQL separados (<code>%s</code>) e transações para gravar estados como giro usado e cupom emitido.</li>
+                    <li><strong>Autenticação:</strong> a sessão identifica o cliente; decorators protegem rotas de cliente e de administração. Confirmação e recuperação usam tokens com expiração.</li>
+                    <li><strong>Prêmio da roleta:</strong> seleção e gravação são responsabilidade do servidor; <code>script.js</code> apenas converte o segmento retornado em animação e mensagem.</li>
+                </ul>
+            </section>
+
+            <!-- Segurança: explica o que não deve ir ao repositório público. -->
+            <section class="card">
+                <span class="eyebrow">Segurança e privacidade</span>
+                <h2>Arquivos que não devem ser compartilhados</h2>
+                <ul>
+                    <li><strong><code>.env</code>:</strong> arquivo local de segredos, como conexão de banco, chaves e senhas. O tutorial explica para que serve, mas não lê nem mostra seu conteúdo. Nunca envie para o GitHub ou cole em uma conversa.</li>
+                    <li><strong><code>data.sqlite</code>:</strong> banco antigo com registros; não publique nem apague sem plano de migração e backup.</li>
+                    <li><strong><code>uploads/</code>:</strong> arquivos enviados por pessoas podem conter dados privados.</li>
+                    <li><strong>Senhas e connection strings:</strong> se já foram expostas, troque/rotacione pelo serviço correspondente.</li>
+                    <li><strong><code>.gitignore</code>:</strong> lista arquivos locais que o Git não deve enviar. Ainda assim, sempre verifique o que será publicado.</li>
+                </ul>
+                <p>Esta edição não copia código de credenciais, banco de clientes, uploads, nem o arquivo compactado original. A árvore lista o propósito dos componentes, sem exibir valores secretos ou dados pessoais.</p>
+            </section>
+
+            <!-- Diagnóstico: sugere qual camada conferir antes de alterar código/dados. -->
+            <section class="card">
+                <span class="eyebrow">Se algo não funcionar</span>
+                <h2>Diagnóstico por camada</h2>
+                <ol>
+                    <li><strong>A página está sem estilo?</strong> Confira se o <code>href</code> do CSS aponta para um arquivo que existe e se a grafia/capitalização está certa.</li>
+                    <li><strong>O botão não faz nada?</strong> Confira o nome da função no HTML, o carregamento do JS, o <code>id</code> do elemento e o Console do navegador.</li>
+                    <li><strong>Recebeu erro ao enviar?</strong> Confira a aba Network (Rede): URL, método, código HTTP e mensagem JSON do servidor.</li>
+                    <li><strong>Cadastro não chega ao banco?</strong> Compare os <code>name</code> dos campos com as chaves que a rota Python lê e verifique a mensagem no terminal do backend.</li>
+                    <li><strong>E-mail não chegou?</strong> A configuração SMTP precisa existir no ambiente do servidor; confira spam e os logs, sem publicar a senha SMTP.</li>
+                    <li><strong>Não há giro?</strong> É preciso estar autenticado e possuir uma rodada pendente criada pela regra do sistema.</li>
+                    <li><strong>O duplo clique abriu uma versão antiga?</strong> Confira o caminho do arquivo e inicie <code>versoes/0.0.2/mvp-tattoo/app.py</code>; os launchers da raiz e da 0.0.11 são históricos.</li>
+                </ol>
+                <p>Ao reproduzir um problema, registre a rota, o status HTTP e os logs correspondentes. Evite corrigir dados diretamente no banco antes de identificar a regra que os produziu.</p>
+            </section>
+
+        </main>
+    </div>
+
+    <footer class="footer">Guia do Site do Obito · Edição tutorial 0.0.2</footer>
+
+    <!-- Os dados abaixo alimentam o mapa; o tutorial não abre nem mostra arquivos secretos. -->
+    <script>
+        // Cada registro associa um caminho do projeto a propósito, uso e alertas.
+        const files = [
+            {group:"Pasta principal · launcher e versão antiga",path:".env",tags:"segredo ambiente banco senha",purpose:"Guarda configurações privadas locais, como chaves e conexão de banco. É ignorado pelo Git e não deve ser compartilhado.",how:"O programa lê essas variáveis ao iniciar. Para hospedagem, configure-as como segredos no serviço em vez de publicar o arquivo.",warning:"O tutorial não abre nem mostra seu conteúdo."},
+            {group:"Pasta principal · launcher e versão antiga",path:".gitignore",tags:"git ignorar segredo",purpose:"Diz ao Git quais arquivos locais não devem ser incluídos em commits, como ambientes virtuais, caches e arquivos .env.",how:"Antes de publicar, confira a lista e também revise os arquivos já rastreados pelo Git."},
+            {group:"Pasta principal · launcher e versão antiga",path:"index.html",tags:"home página antiga entrada",purpose:"Página inicial estática do projeto na raiz. É uma cópia mais antiga da página de fidelidade.",how:"O launcher Flask da raiz entrega essa página. A versão principal fica em versoes/0.0.2."},
+            {group:"Pasta principal · launcher e versão antiga",path:"styles.css",tags:"css visual raiz legado",purpose:"Estilos da página estática da raiz: cores, espaçamentos, layout e aparência.",how:"O HTML referencia este arquivo com uma tag link."},
+            {group:"Pasta principal · launcher e versão antiga",path:"script.js",tags:"javascript roda raiz antiga",purpose:"Comportamento interativo da página estática da raiz. É diferente de versoes/0.0.2/script.js.",how:"O HTML carrega o arquivo ao final da página."},
+            {group:"Pasta principal · launcher e versão antiga",path:".vscode/settings.json",tags:"vscode editor configuração",purpose:"Preferências locais do editor VS Code para este projeto.",how:"Afeta ferramentas do editor, não é uma rota nem uma tela do site."},
+            {group:"Pasta principal · launcher e versão antiga",path:"mvp-tattoo/app.py",tags:"python flask sqlite launcher duplo clique legado",purpose:"Backend Flask antigo e launcher da raiz. Usa SQLite local e é separado da versão principal 0.0.2.",how:"O arquivo e seu banco são históricos e não são usados pela versão principal."},
+            {group:"Pasta principal · launcher e versão antiga",path:"mvp-tattoo/data.sqlite",tags:"sqlite banco clientes registros",purpose:"Banco de dados SQLite da aplicação antiga na raiz.",how:"Contém dados persistentes da aplicação. O site novo em Neon não o lê automaticamente.",warning:"Não compartilhe, apague nem substitua sem backup e plano de migração."},
+            {group:"Pasta principal · launcher e versão antiga",path:"mvp-tattoo/package.json",tags:"node npm dependências comandos",purpose:"Metadados e dependências do wrapper JavaScript do app antigo.",how:"O arquivo informa ao npm como iniciar o processo Node."},
+            {group:"Pasta principal · launcher e versão antiga",path:"mvp-tattoo/README.md",tags:"leia-me instruções raiz",purpose:"Instruções do app antigo da raiz, incluindo execução e configuração.",how:"Use-o para entender aquela cópia histórica, não a versão principal."},
+            {group:"Pasta principal · launcher e versão antiga",path:"mvp-tattoo/requirements.txt",tags:"python dependências flask",purpose:"Lista as bibliotecas Python necessárias à aplicação antiga.",how:"O instalador de dependências usa este arquivo para preparar o ambiente Python."},
+            {group:"Pasta principal · launcher e versão antiga",path:"mvp-tattoo/server.js",tags:"node iniciar python wrapper",purpose:"Wrapper Node que inicia o servidor Python.",how:"É uma alternativa de inicialização; não é a lógica principal do backend."},
+            {group:"Pasta principal · launcher e versão antiga",path:"mvp-tattoo/public/index.html",tags:"mvp painel página",purpose:"Estrutura HTML do painel MVP antigo: cadastro, login, roleta, pedidos e área administrativa.",how:"É a página de interface do MVP servido pela aplicação antiga."},
+            {group:"Pasta principal · launcher e versão antiga",path:"mvp-tattoo/public/app.js",tags:"mvp javascript painel ações",purpose:"Lógica do navegador para o painel MVP antigo.",how:"Coleta formulários, chama APIs e atualiza os elementos da interface."},
+            {group:"Pasta principal · launcher e versão antiga",path:"mvp-tattoo/public/styles.css",tags:"mvp css visual painel",purpose:"Aparência do painel MVP antigo.",how:"É carregado pelo HTML do painel."},
+            {group:"Pasta principal · launcher e versão antiga",path:"mvp-tattoo/src/db.js",tags:"sqlite banco node dados consultas",purpose:"Camada de acesso a SQLite em Node: cria tabelas e oferece operações de consulta.",how:"Usa placeholders de SQLite e mantém uma implementação de banco diferente da versão Flask/Neon."},
+            {group:"Pasta principal · launcher e versão antiga",path:"mvp-tattoo/uploads/",tags:"arquivos anexos imagens privados",purpose:"Pasta em que o app antigo guarda arquivos enviados.",how:"Uploads são dados, não código-fonte.",warning:"Não publique uploads que possam identificar clientes."},
+            {group:"Pasta principal · launcher e versão antiga",path:"mvp-tattoo/uploads/tmp_test.txt",tags:"upload arquivo temporário teste",purpose:"Arquivo de texto temporário de teste encontrado na pasta de uploads antiga.",how:"Não participa do código do site; confira com a pessoa responsável antes de apagar."},
+            {group:"Pasta principal · launcher e versão antiga",path:"mvp-tattoo/uploads/a7451c9e12d449ca8349c2c4955f1fd9_tmp_test.txt",tags:"upload arquivo temporário teste",purpose:"Outro arquivo de texto temporário de teste encontrado na pasta de uploads antiga.",how:"Não participa do código do site; confira com a pessoa responsável antes de apagar."},
+            {group:"Histórico · versoes/0.0.0",path:"versoes/old/0.0.0/index.html",tags:"html primeira versão",purpose:"Página da versão antiga 0.0.0.",how:"Serve como registro histórico; não é a página atual recomendada."},
+            {group:"Histórico · versoes/0.0.0",path:"versoes/old/0.0.0/styles.css",tags:"css primeira versão",purpose:"Estilos da versão 0.0.0.",how:"Mantido junto ao HTML histórico."},
+            {group:"Histórico · versoes/0.0.0",path:"versoes/old/0.0.0/script.js",tags:"javascript primeira versão",purpose:"Interações da página 0.0.0.",how:"Mantido separado dos scripts das versões posteriores."},
+            {group:"Histórico · versoes/0.0.0",path:"versoes/old/0.0.0/.gitignore",tags:"git versão",purpose:"Regras de arquivos ignorados específicas para essa cópia.",how:"As regras podem diferir das da pasta principal."},
+            {group:"Histórico · versoes/0.0.0",path:"versoes/old/0.0.0/mvp-tattoo/app.py",tags:"python versão antiga",purpose:"Backend da cópia 0.0.0.",how:"Versão anterior do servidor; compare antes de trazer uma mudança para o app atual."},
+            {group:"Histórico · versoes/0.0.0",path:"versoes/old/0.0.0/mvp-tattoo/package.json",tags:"node npm versão antiga",purpose:"Configuração Node da cópia 0.0.0.",how:"Define metadados e dependências dessa versão."},
+            {group:"Histórico · versoes/0.0.0",path:"versoes/old/0.0.0/mvp-tattoo/README.md",tags:"documentação versão antiga",purpose:"Instruções da cópia 0.0.0.",how:"Leia junto com o código daquela pasta."},
+            {group:"Histórico · versoes/0.0.0",path:"versoes/old/0.0.0/mvp-tattoo/requirements.txt",tags:"python dependências antiga",purpose:"Bibliotecas Python declaradas pela versão 0.0.0.",how:"Reflete as necessidades daquela versão histórica."},
+            {group:"Histórico · versoes/0.0.0",path:"versoes/old/0.0.0/mvp-tattoo/server.js",tags:"node backend antiga",purpose:"Iniciador Node do backend antigo.",how:"Não confundir com o Flask que contém as rotas."},
+            {group:"Histórico · versoes/0.0.0",path:"versoes/old/0.0.0/mvp-tattoo/src/db.js",tags:"sqlite node camada banco",purpose:"Implementação de acesso a banco da cópia histórica.",how:"Ajuda a entender como o protótipo antigo persistia dados."},
+            {group:"Histórico · versoes/0.0.0",path:"versoes/old/0.0.0/mvp-tattoo/public/index.html",tags:"html mvp antigo",purpose:"Interface do MVP na versão 0.0.0.",how:"Separa a tela do painel da página principal."},
+            {group:"Histórico · versoes/0.0.0",path:"versoes/old/0.0.0/mvp-tattoo/public/app.js",tags:"javascript mvp",purpose:"Interações do painel MVP 0.0.0.",how:"Faz a ponte entre controles e rotas antigas."},
+            {group:"Histórico · versoes/0.0.0",path:"versoes/old/0.0.0/mvp-tattoo/public/styles.css",tags:"css mvp antigo",purpose:"Estilos do painel da versão 0.0.0.",how:"Aplica o layout apenas ao painel daquela versão."},
+            {group:"Histórico · versoes/0.0.1",path:"versoes/old/0.0.1/index.html",tags:"html colaboradora login cadastro página",purpose:"Página da versão histórica 0.0.1, trazida do trabalho manual da colaboradora.",how:"É a base histórica da identidade visual que foi preservada nas correções."},
+            {group:"Histórico · versoes/0.0.1",path:"versoes/old/0.0.1/styles.css",tags:"css design colaboradora",purpose:"Estilos e identidade visual da versão 0.0.1.",how:"Consulte-a para comparar a aparência histórica."},
+            {group:"Histórico · versoes/0.0.1",path:"versoes/old/0.0.1/login.js",tags:"javascript login",purpose:"Script de conta da versão 0.0.1.",how:"Versão histórica; a lógica atual está em versoes/0.0.2/login.js."},
+            {group:"Histórico · versoes/0.0.1",path:"versoes/old/0.0.1/script.js",tags:"javascript roleta",purpose:"Script da roleta da versão 0.0.1.",how:"Não é carregado pelo site principal da pasta 0.0.2."},
+            {group:"Histórico · versoes/0.0.1",path:"versoes/old/0.0.1/esqueci-senha.html",tags:"html recuperação senha",purpose:"Tela de recuperação de senha da versão histórica.",how:"A versão equivalente está na pasta 0.0.2."},
+            {group:"Histórico · versoes/0.0.1",path:"versoes/old/0.0.1/njnaruto.ttf",tags:"fonte tipografia",purpose:"Arquivo de fonte usado por estilos da versão histórica.",how:"Um arquivo .ttf guarda formas de letras."},
+            {group:"Histórico · versoes/0.0.1",path:"versoes/old/0.0.1/assets/img/logo.png",tags:"imagem logo",purpose:"Imagem de logo da versão 0.0.1.",how:"O HTML referencia imagens pelo caminho relativo."},
+            {group:"Histórico · versoes/0.0.1",path:"versoes/old/0.0.1/.gitignore",tags:"git histórico",purpose:"Regras de arquivos ignorados para a cópia 0.0.1.",how:"Mantém arquivos locais fora do versionamento."},
+            {group:"Histórico · versoes/0.0.1",path:"versoes/old/0.0.1/mvp-tattoo/.gitkeep",tags:"git pasta vazia",purpose:"Marcador para manter o diretório do MVP no Git.",how:"Não implementa uma funcionalidade do site."},
+            {group:"Histórico · versoes/0.0.1",path:"versoes/old/0.0.1/mvp-tattoo/public/.gitkeep",tags:"git pasta pública",purpose:"Marcador para manter a pasta pública do MVP no Git.",how:"Não é carregado pelo navegador."},
+            {group:"Histórico · versoes/0.0.1",path:"versoes/old/0.0.1/mvp-tattoo/src/.gitkeep",tags:"git pasta código",purpose:"Marcador para manter a pasta src do MVP no Git.",how:"Não é executado pelo backend."},
+            {group:"Histórico · versoes/0.0.1",path:"versoes/old/0.0.1/mvp-tattoo/app.py",tags:"python backend histórico",purpose:"Backend Flask que acompanha a cópia histórica.",how:"Leia o README dessa pasta antes de tentar executá-lo."},
+            {group:"Histórico · versoes/0.0.1",path:"versoes/old/0.0.1/mvp-tattoo/package.json",tags:"node pacote",purpose:"Metadados Node da cópia 0.0.1.",how:"Define o pacote e scripts de execução disponíveis."},
+            {group:"Histórico · versoes/0.0.1",path:"versoes/old/0.0.1/mvp-tattoo/README.md",tags:"instruções documentação",purpose:"Instruções para a pasta de backend 0.0.1.",how:"Use para saber como aquela cópia foi pensada para rodar."},
+            {group:"Histórico · versoes/0.0.1",path:"versoes/old/0.0.1/mvp-tattoo/requirements.txt",tags:"python bibliotecas",purpose:"Dependências Python da versão 0.0.1.",how:"Lista os pacotes necessários ao Flask daquela versão."},
+            {group:"Histórico · versoes/0.0.1",path:"versoes/old/0.0.1/mvp-tattoo/server.js",tags:"node iniciar servidor",purpose:"Iniciador Node presente na cópia 0.0.1.",how:"Não contém sozinho as regras de negócio do site."},
+            {group:"Histórico · versoes/0.0.1",path:"versoes/old/0.0.1/mvp-tattoo/src/db.js",tags:"banco sqlite",purpose:"Código de acesso ao banco usado pela cópia histórica do MVP.",how:"Mantido como referência da implementação anterior."},
+            {group:"Histórico · versoes/0.0.1",path:"versoes/old/0.0.1/mvp-tattoo/public/app.js",tags:"javascript mvp",purpose:"JavaScript do MVP histórico.",how:"Atualiza a interface do painel daquela cópia."},
+            {group:"Histórico · versoes/0.0.1",path:"versoes/old/0.0.1/mvp-tattoo/public/index.html",tags:"html mvp painel",purpose:"HTML do painel MVP 0.0.1.",how:"Estrutura os controles do painel antigo."},
+            {group:"Histórico · versoes/0.0.1",path:"versoes/old/0.0.1/mvp-tattoo/public/styles.css",tags:"css mvp",purpose:"Estilos do MVP 0.0.1.",how:"Estiliza a interface do painel."},
+            {group:"Versão principal · versoes/0.0.2",path:"versoes/0.0.2/index.html",tags:"html home login cadastro roleta cpf email senha indicador abas",purpose:"Página principal atual: conteúdo, roleta, formulários de conta e ligações para os scripts.",how:"Procure os elementos com id; login.js/script.js usam esses nomes para localizar os controles."},
+            {group:"Versão principal · versoes/0.0.2",path:"versoes/0.0.2/styles.css",tags:"css visual cores abas mobile",purpose:"Estilos atuais da página, formulários, indicador de abas e adaptação a telas menores.",how:"Para ajustar aparência, comece pela regra CSS ligada à classe ou id do elemento."},
+            {group:"Versão principal · versoes/0.0.2",path:"versoes/0.0.2/login.js",tags:"javascript cadastro entrar abas cpf email senha recuperar sessão token confirmação autenticação",purpose:"Troca as abas, envia cadastro/login, confirma e-mail, verifica sessão, reenvia confirmação e administra recuperação de senha.",how:"Verifique ids e names do HTML sempre que editar os dados enviados."},
+            {group:"Versão principal · versoes/0.0.2",path:"versoes/0.0.2/script.js",tags:"javascript roleta animação giro",purpose:"Pede o giro à API, anima a roda e mostra o prêmio que o servidor devolveu.",how:"A escolha e o registro do prêmio acontecem no backend; este arquivo apresenta a animação."},
+            {group:"Versão principal · versoes/0.0.2",path:"versoes/0.0.2/esqueci-senha.html",tags:"html recuperar redefinir senha",purpose:"Página com formulários para pedir link e definir a nova senha.",how:"login.js detecta o token na URL e envia os formulários para a API."},
+            {group:"Versão principal · versoes/0.0.2",path:"versoes/0.0.2/assets/img/logo.png",tags:"imagem marca logo",purpose:"Logo exibida pelo site atual.",how:"O HTML aponta para ela pelo caminho assets/img/logo.png."},
+            {group:"Versão principal · versoes/0.0.2",path:"versoes/0.0.2/njnaruto.ttf",tags:"fonte fonte tipografia",purpose:"Fonte local incluída nesta versão.",how:"O CSS pode declarar uma fonte local com @font-face."},
+            {group:"Versão principal · versoes/0.0.2",path:"versoes/0.0.2/.gitignore",tags:"git segredos ignorar",purpose:"Regras para impedir que arquivos locais/secretos sejam enviados ao Git nesta versão.",how:"Confirme que os segredos não foram rastreados antes de publicar."},
+            {group:"Versão principal · versoes/0.0.2",path:"versoes/0.0.2/.env",tags:"segredo neon banco senha",purpose:"Configuração privada local migrada para a versão principal. É ignorada pelo Git.",how:"O backend carrega as variáveis para conectar ao banco e validar sessões.",warning:"Nunca mostre nem envie os valores deste arquivo."},
+            {group:"Versão principal · versoes/0.0.2",path:"versoes/0.0.2/.env.example",tags:"ambiente exemplo configuração variáveis",purpose:"Modelo das variáveis de ambiente exigidas pela aplicação, sem credenciais reais.",how:"Use como referência para configurar outro ambiente."},
+            {group:"Versão principal · versoes/0.0.2",path:"versoes/0.0.2/.neon",tags:"neon arquivo oculto configuração ambiente",purpose:"Identifica o projeto Neon associado ao ambiente de desenvolvimento.",how:"Não contém a connection string nem é necessário para executar o site."},
+            {group:"Versão principal · versoes/0.0.2",path:"versoes/0.0.2/skills-lock.json",tags:"agentes ferramentas skills dependências",purpose:"Registro de skills de desenvolvimento instaladas para o workspace.",how:"Ajuda ferramentas de assistência a manter versões das skills; o navegador não usa esse arquivo."},
+            {group:"Versão principal · versoes/0.0.2",path:"versoes/0.0.2/.vscode/mcp.json",tags:"vscode mcp ferramenta desenvolvimento",purpose:"Configuração local de integração de ferramentas de desenvolvimento.",how:"Não faz parte do fluxo de visitantes do site."},
+            {group:"Versão principal · versoes/0.0.2",path:"versoes/0.0.2/mvp-tattoo/app.py",tags:"python flask backend neon postgres api rotas cpf email senha autenticação roleta clientes fidelidade admin cupons recuperação reset cadastro tattoo SQL",purpose:"Backend atual: conecta ao PostgreSQL/Neon, cria tabelas, valida contas, envia e-mails e atende APIs de roleta, clientes, fidelidade e administração.",how:"Este é o app.py da versão atual. Não confundir com mvp-tattoo/app.py na raiz, que usa SQLite."},
+            {group:"Versão principal · versoes/0.0.2",path:"versoes/0.0.2/mvp-tattoo/requirements.txt",tags:"python pacotes dependências flask psycopg dotenv",purpose:"Lista Flask, driver PostgreSQL e python-dotenv para instalar no ambiente Python.",how:"Atualize esta lista ao adicionar uma biblioteca Python necessária."},
+            {group:"Versão principal · versoes/0.0.2",path:"versoes/0.0.2/mvp-tattoo/README.md",tags:"documentação backend rotas",purpose:"Resumo técnico dos componentes do backend e do painel MVP.",how:"Consulte também o README da raiz da versão, que descreve configuração e execução."},
+            {group:"Versão principal · versoes/0.0.2",path:"versoes/0.0.2/README.md",tags:"documentação instalação configuração publicar execução",purpose:"Guia de configuração e execução da versão principal 0.0.2.",how:"Inclui dependências, variáveis de ambiente, inicialização e notas de hospedagem."},
+            {group:"Versão principal · versoes/0.0.2",path:"versoes/0.0.2/guia.html",tags:"documentação tutorial índice arquitetura",purpose:"Guia interativo do projeto com índice pesquisável, fluxos e explicações dos arquivos.",how:"Abra em /guia.html ou diretamente no navegador."},
+            {group:"Versão principal · versoes/0.0.2",path:"versoes/0.0.2/mvp-tattoo/test_auth.py",tags:"python testes teste cadastro login roleta",purpose:"Testes automáticos do fluxo de conta, validação, autorização e giro usando schemas de teste.",how:"Os testes verificam regras importantes sem usar clientes de produção; DATABASE_URL é necessária para rodá-los."},
+            {group:"Versão principal · versoes/0.0.2",path:"versoes/0.0.2/mvp-tattoo/package.json",tags:"node npm comandos",purpose:"Metadados e scripts do wrapper Node da versão atual.",how:"Não substitui requirements.txt: um é para Node/npm; o outro é para Python/pip."},
+            {group:"Versão principal · versoes/0.0.2",path:"versoes/0.0.2/mvp-tattoo/server.js",tags:"node iniciador flask python",purpose:"Inicia app.py com Python, encaminha logs para o terminal e encerra o processo junto com Node.",how:"A aplicação e as APIs continuam implementadas em Python/Flask."},
+            {group:"Versão principal · versoes/0.0.2",path:"versoes/0.0.2/mvp-tattoo/public/app.js",tags:"mvp javascript painel api",purpose:"Comportamento do painel MVP: formulários, chamadas à API, roleta, fidelidade e administração.",how:"Confira os ids do HTML se um controle não responder."},
+            {group:"Versão principal · versoes/0.0.2",path:"versoes/0.0.2/mvp-tattoo/public/styles.css",tags:"mvp css painel estilo",purpose:"Estilo da interface MVP.",how:"Separado do styles.css da página principal."},
+            {group:"Versão principal · versoes/0.0.2",path:"versoes/0.0.2/mvp-tattoo/.gitkeep",tags:"git pasta vazia",purpose:"Arquivo marcador para o Git manter uma pasta que, de outra forma, estaria vazia.",how:"Não implementa uma funcionalidade do site."},
+            {group:"Versão principal · versoes/0.0.2",path:"versoes/0.0.2/mvp-tattoo/public/.gitkeep",tags:"git pasta pública vazia",purpose:"Marcador para manter o diretório público no repositório.",how:"Não é carregado pelo navegador."},
+            {group:"Versão principal · versoes/0.0.2",path:"versoes/0.0.2/mvp-tattoo/src/.gitkeep",tags:"git pasta código",purpose:"Marcador para manter o diretório src no repositório.",how:"Não é executado pelo backend atual."},
+            {group:"Ferramentas de desenvolvimento · skills",path:"versoes/0.0.2/.agents/skills/neon/SKILL.md",tags:"documentação neon agente",purpose:"Instruções de desenvolvimento para trabalhar com ferramentas Neon.",how:"Material interno de apoio ao desenvolvimento; não é documentação apresentada ao visitante."},
+            {group:"Ferramentas de desenvolvimento · skills",path:"versoes/0.0.2/.agents/skills/neon/references/auth.md",tags:"neon referência autenticação",purpose:"Referência técnica de autenticação nas ferramentas Neon.",how:"Documento de apoio de desenvolvimento."},
+            {group:"Ferramentas de desenvolvimento · skills",path:"versoes/0.0.2/.agents/skills/neon/references/claimable-neon.md",tags:"neon referência claimable",purpose:"Referência de uma funcionalidade de provisionamento Neon.",how:"Material auxiliar, não faz parte do app web."},
+            {group:"Ferramentas de desenvolvimento · skills",path:"versoes/0.0.2/.agents/skills/neon/references/function-triggers.md",tags:"neon função triggers referência",purpose:"Referência de gatilhos de função da plataforma.",how:"Não deve ser confundido com as rotas Flask da aplicação."},
+            {group:"Ferramentas de desenvolvimento · skills",path:"versoes/0.0.2/.agents/skills/neon/references/logs-loki.md",tags:"neon logs loki referência",purpose:"Referência para logs e observabilidade.",how:"Apoio para quem desenvolve ou administra a plataforma."},
+            {group:"Ferramentas de desenvolvimento · skills",path:"versoes/0.0.2/.agents/skills/neon/references/parse-env.md",tags:"neon env variáveis referência",purpose:"Referência sobre variáveis de ambiente em integrações Neon.",how:"Não contém a connection string particular do projeto."},
+            {group:"Ferramentas de desenvolvimento · skills",path:"versoes/0.0.2/.agents/skills/neon/references/sdk.md",tags:"neon sdk referência",purpose:"Referência técnica do SDK Neon.",how:"Material de consulta para desenvolvimento."},
+            {group:"Ferramentas de desenvolvimento · skills",path:"versoes/0.0.2/.agents/skills/neon-postgres/SKILL.md",tags:"postgres neon habilidade agente",purpose:"Orientações de apoio para desenvolvimento com Neon/PostgreSQL.",how:"É uma instrução para ferramentas de desenvolvimento, não executada pelo site."},
+            {group:"Ferramentas de desenvolvimento · skills",path:"versoes/0.0.2/.agents/skills/neon-postgres/references/branching.md",tags:"postgres ramificações referência",purpose:"Referência de branches de banco de dados.",how:"Material de consulta da plataforma."},
+            {group:"Ferramentas de desenvolvimento · skills",path:"versoes/0.0.2/.agents/skills/neon-postgres/references/egress-optimization.md",tags:"postgres otimização egress",purpose:"Referência sobre otimização de transferência de dados.",how:"Não altera o funcionamento do frontend."},
+            {group:"Ferramentas de desenvolvimento · skills",path:"versoes/0.0.2/.agents/skills/neon-postgres/references/full-text-search.md",tags:"postgres busca texto",purpose:"Referência sobre busca textual no PostgreSQL.",how:"Material técnico auxiliar."},
+            {group:"Ferramentas de desenvolvimento · skills",path:"versoes/0.0.2/.agents/skills/neon-postgres/references/hybrid-search.md",tags:"postgres busca híbrida",purpose:"Referência sobre busca híbrida.",how:"Material técnico auxiliar."},
+            {group:"Ferramentas de desenvolvimento · skills",path:"versoes/0.0.2/.agents/skills/neon-postgres/references/lakebase-search-drizzle.md",tags:"postgres drizzle lakebase busca",purpose:"Documento de referência sobre integração de busca e ferramentas específicas.",how:"Não é dependência ativa do site atual."},
+            {group:"Ferramentas de desenvolvimento · skills",path:"versoes/0.0.2/.agents/skills/neon-postgres/references/vector-search.md",tags:"postgres vetorial busca",purpose:"Referência sobre busca vetorial.",how:"Material de estudo; o app de fidelidade não depende dessa busca."},
+            {group:"Histórico e arquivos de apoio",path:"versoes/old/site-obito-v0.0.1-original.rar",tags:"rar compactado arquivo original colaboradora histórico",purpose:"Compactado original preservado como material histórico da versão da colaboradora.",how:"Consulte seu conteúdo apenas quando precisar comparar o original.",warning:"Não extraia por cima das pastas existentes."},
+            {group:"Histórico e arquivos de apoio",path:"versoes/old/0.0.11/README.md",tags:"versão arquivada histórico",purpose:"Registra que a versão 0.0.11 foi substituída pela 0.0.2 e mantida apenas para consulta histórica.",how:"O desenvolvimento ativo deve ser feito na pasta versoes/0.0.2."}
+        ];
+
+        const tree = document.getElementById("fileTree");
+        const search = document.getElementById("fileSearch");
+        const noResults = document.getElementById("noResults");
+        const fileInfo = document.getElementById("fileInfo");
+        const fileCount = document.getElementById("fileCount");
+
+        // Converte caracteres especiais antes de inserir texto do índice em HTML.
+        function escapeHtml(value) {
+            return value.replace(/[&<>"']/g, (character) => ({
+                "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+            })[character]);
+        }
+
+        // Atualiza o painel lateral com a explicação do arquivo selecionado.
+        function showFile(file, button) {
+            tree.querySelectorAll("button[aria-current]").forEach((item) => item.removeAttribute("aria-current"));
+            if (button) button.setAttribute("aria-current", "true");
+            fileInfo.innerHTML = `
+                <h3>${escapeHtml(file.path)}</h3>
+                <p class="file-path">${escapeHtml(file.group)}</p>
+                <p><strong>Para que serve:</strong> ${escapeHtml(file.purpose)}</p>
+                <p><strong>Como entender/usar:</strong> ${escapeHtml(file.how)}</p>
+                ${file.warning ? `<p class="callout"><strong>Atenção:</strong> ${escapeHtml(file.warning)}</p>` : ""}
+                <p>${(file.tags.split(" ")).map((tag) => `<span class="pill">${escapeHtml(tag)}</span>`).join("")}</p>
+            `;
+            document.getElementById("arquivoDetalhe").scrollIntoView({ behavior: "smooth", block: "nearest" });
+        }
+
+        // Filtra os registros pela busca e redesenha grupos/atalhos do mapa.
+        function drawTree() {
+            const query = search.value.trim().toLocaleLowerCase("pt-BR");
+            const matches = files.filter((file) => `${file.group} ${file.path} ${file.tags} ${file.purpose}`.toLocaleLowerCase("pt-BR").includes(query));
+            const groups = [...new Set(matches.map((file) => file.group))];
+            fileCount.textContent = query ? `${matches.length} de ${files.length} arquivos` : `${files.length} arquivos mapeados`;
+            tree.innerHTML = "";
+
+            for (const group of groups) {
+                const groupFiles = matches.filter((item) => item.group === group);
+                const details = document.createElement("details");
+                details.className = "tree-group";
+                details.open = Boolean(query);
+                const summary = document.createElement("summary");
+                summary.textContent = group;
+                const count = document.createElement("span");
+                count.className = "group-count";
+                count.textContent = `${groupFiles.length} ${groupFiles.length === 1 ? "item" : "itens"}`;
+                summary.appendChild(count);
+                details.appendChild(summary);
+                const list = document.createElement("div");
+                list.className = "tree";
+                for (const file of groupFiles) {
+                    const button = document.createElement("button");
+                    button.type = "button";
+                    const pathParts = file.path.split("/");
+                    const fileName = document.createElement("span");
+                    fileName.className = "file-name";
+                    fileName.textContent = pathParts.pop();
+                    const parentPath = document.createElement("span");
+                    parentPath.className = "file-parent";
+                    parentPath.textContent = pathParts.join("/") || "raiz do projeto";
+                    button.title = file.path;
+                    button.append(fileName, parentPath);
+                    button.addEventListener("click", () => showFile(file, button));
+                    list.appendChild(button);
+                }
+                details.appendChild(list);
+                tree.appendChild(details);
+            }
+            noResults.hidden = matches.length > 0;
+        }
+
+        // Refaz a árvore a cada alteração do campo de busca e na abertura inicial.
+        search.addEventListener("input", drawTree);
+        drawTree();
+    </script>
+</body>
+</html>
