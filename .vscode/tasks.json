@@ -1,0 +1,30 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Site do Obito: iniciar Flask",
+      "type": "process",
+      "command": "py",
+      "args": ["app.py"],
+      "options": {
+        "cwd": "${workspaceFolder}/mvp-tattoo"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": false
+      }
+    },
+    {
+      "label": "Site do Obito: testes de e-mail",
+      "type": "process",
+      "command": "py",
+      "args": ["-m", "unittest", "test_email", "-v"],
+      "options": {
+        "cwd": "${workspaceFolder}/mvp-tattoo"
+      },
+      "problemMatcher": []
+    }
+  ]
+}
