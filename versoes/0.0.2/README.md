@@ -1,5 +1,9 @@
 # Site do Obito — versão 0.0.2
 
+> **Cópia arquivada:** a versão ativa foi promovida para a raiz do repositório.
+> Use a raiz para novas alterações. Esta cópia fica somente como referência de
+> compatibilidade e recuperação.
+
 Esta pasta contém uma cópia executável e independente do site, além do guia de
 arquivos em `guia.html`. O HTML, o CSS, o JavaScript, o backend Flask e os
 arquivos do painel MVP estão dentro desta própria pasta. A aplicação não lê
