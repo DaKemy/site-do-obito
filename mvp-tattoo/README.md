@@ -1,45 +1,62 @@
-# Roleta da Fidelidade — versão 0.0.11
+# Backend — Site do Obito 0.0.2
 
-O Flask serve o site principal, o painel MVP e as APIs no mesmo endereço. O
-GitHub Pages não executa Flask: publique o código no GitHub e hospede este
-backend separadamente em um serviço que execute Python.
+Este diretório contém a aplicação Flask e as APIs da versão principal 0.0.2.
+O servidor entrega o site e as APIs no mesmo endereço. A interface HTML antiga
+do painel foi removida; `/mvp` redireciona para a página principal. O código
+desta pasta não importa nem serve arquivos da versão 0.0.11.
 
-## Configuração
+Consulte [../README.md](../README.md) para configurar o ambiente, iniciar o
+servidor e entender as variáveis exigidas.
 
-Configure as variáveis no ambiente do serviço de hospedagem; não as coloque no
-código nem no Git:
+## Componentes
 
-- `FLASK_SECRET_KEY`: segredo longo e aleatório para assinar sessões.
-- `CPF_HASH_SECRET`: segredo aleatório, estável e exclusivo para gerar hashes
-  dos CPFs. Não o troque sem um plano de migração, pois os hashes existentes
-  deixarão de corresponder.
-- `ADMIN_USERNAME` e `ADMIN_PASSWORD`: credenciais administrativas fortes.
-- `PUBLIC_BASE_URL`: URL pública HTTPS do site, sem barra final.
-- `SESSION_COOKIE_SECURE=1`: exige HTTPS para o cookie de sessão.
-- `SMTP_HOST`, `SMTP_PORT`, `SMTP_FROM`: servidor e remetente de e-mail.
-- `SMTP_USERNAME` e `SMTP_PASSWORD`: credenciais SMTP, quando exigidas.
-- `SMTP_USE_TLS=1` (padrão) ou `SMTP_USE_SSL=1`: proteção da conexão SMTP.
-- `PORT`: porta fornecida pela hospedagem (padrão local: `5000`).
+- `app.py`: configuração e conexão PostgreSQL, validações, envio de e-mail,
+  rotas Flask e regras de contas, roleta, fidelidade e administração. Os
+  cabeçalhos `# ── ... ──` separam os grupos de rotas; docstrings explicam os
+  helpers e operações que não são óbvios.
+- `manage_admin.py`: ferramenta de terminal para criar ou redefinir uma conta
+  de desenvolvedor; lê a senha sem exibi-la e grava somente o hash.
+- As rotas administrativas protegidas permitem gerenciar contas, redefinir
+  senhas e atualizar as configurações dos prêmios da roleta.
+- `public/`: recursos estáticos remanescentes do painel antigo; não há mais uma
+  página HTML do painel.
+- `requirements.txt`: dependências Python.
+- `server.js`: iniciador opcional do backend Python usando Node.js.
+- `test_auth.py` e `test_email.py`: testes do fluxo de contas, giros e envio por
+  API HTTPS do Gmail.
 
-Instale `requirements.txt` e inicie com `python app.py` ou `npm start` nesta
-pasta. Em desenvolvimento local por HTTP, defina `SESSION_COOKIE_SECURE=0`.
-Não execute `FLASK_DEBUG=1` em produção.
+## Mapa das APIs
 
-## Cadastro e dados pessoais
+| Grupo de rotas | Finalidade | Acesso |
+| --- | --- | --- |
+| `/api/health`, `/api/prizes` | Verificar disponibilidade e listar prêmios ativos. | Público |
+| `/api/auth/...` | Cadastro, confirmação, login/logout, sessão e recuperação de senha. | Público ou sessão de cliente, conforme a ação |
+| `/api/customers/...`, `/api/spins/roll` | Consultar perfil/fidelidade e consumir um giro disponível. | Cliente autenticado; dados limitados à própria conta |
+| `/api/admin/login`, `/api/admin/me`, `/api/admin/logout` | Iniciar, consultar e encerrar a sessão de desenvolvedor. | Credenciais administrativas |
+| `/api/admin/customers/...`, `/api/admin/prizes` | Consultar/alterar clientes, redefinir senhas e configurar prêmios. | Desenvolvedor autenticado |
+| `/api/tattoos/request`, `/api/tattoos/approve` | Receber uma ideia de tatuagem e registrar uma sessão aprovada. | Cliente para pedido; desenvolvedor para aprovação |
 
-O cadastro verifica os dígitos do CPF, impede CPF/e-mail/telefone duplicados e
-exige confirmação do e-mail. A validação matemática não confirma que o CPF foi
-emitido nem que pertence à pessoa. O CPF não é armazenado em texto puro: o
-banco guarda apenas um HMAC com `CPF_HASH_SECRET`. Senhas usam hash apropriado;
-links de confirmação e redefinição expiram e seus tokens não são armazenados em
-texto puro.
+As respostas de erro da API incluem um código HTTP e uma mensagem. O JavaScript
+mostra essa mensagem para a pessoa; ao depurar, confira a rota e o código HTTP
+antes de alterar banco ou regras.
 
-Sem SMTP configurado, o cadastro não afirma que enviou a confirmação. O banco
-SQLite e os arquivos enviados são locais e não devem ser publicados; mantenha
-backup e armazenamento persistente no serviço de hospedagem.
+## Formato das explicações
 
-## Rotas
+Em Python, procure comentários que começam com `#` e docstrings entre aspas
+triplas. O código do navegador usa `//` para explicar funções e eventos. CSS
+usa `/* ... */`. Os comentários descrevem a responsabilidade de cada parte;
+as regras executáveis continuam sendo as próprias instruções do programa.
 
-- `/`: site principal.
-- `/mvp`: painel de fidelidade.
-- `/api/health`: verificação simples do backend.
+As rotas incluem autenticação, confirmação e recuperação de e-mail, clientes,
+giros, cupons, pedidos de tatuagem, fidelidade e administração.
+
+## Executar os testes
+
+`test_email.py` simula chamadas HTTP e não usa credenciais Gmail. `test_auth.py`
+usa a variável `DATABASE_URL` para criar e remover um schema temporário, então
+rode-o somente contra um banco de testes isolado:
+
+```powershell
+py -m unittest test_email -v
+py -m unittest test_auth -v
+```
