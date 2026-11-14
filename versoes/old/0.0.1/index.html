@@ -1,0 +1,284 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <!-- adaptar corretamente a outros dispositivos -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Roleta da Fidelidade</title>
+    <meta
+        name="description"
+        content="Sistema de fidelização com roleta de descontos para clientes de tatuagem."
+    />
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="styles.css" />
+</head>
+
+<script>
+const tabEntrar = document.getElementById("tabEntrar");
+const tabCadastro = document.getElementById("tabCadastro");
+const formEntrar = document.getElementById("formEntrar");
+const formCadastro = document.getElementById("formCadastro");
+const indicador = document.getElementById("Indicador");
+
+tabEntrar.addEventListener("click", () => {
+    formEntrar.classList.add("active");
+    formCadastro.classList.remove("active");
+    indicador.classList.remove("cadastro");
+});
+
+tabCadastro.addEventListener("click", () => {
+    formCadastro.classList.add("active");
+    formEntrar.classList.remove("active");
+    indicador.classList.add("cadastro");
+});
+</script>
+
+<body>
+
+    <!-- ==================== inicio ==================== -->
+    <header class="topbar">
+        <div class="container nav">
+            <div class="brand">
+                <img src="assets/img/logo.png" alt="Obito" width="125px">
+                <span>Roleta da Fidelidade</span>
+            </div>
+
+            <!-- Menu links -->
+            <nav class="menu">
+                <a href="#como-funciona">Como funciona</a>
+                <a href="#beneficios">Benefícios</a>
+                <a href="#fidelizar">Fidelizar</a>
+            </nav>
+
+                <a class="btn btn-primary1" href="#cadastro">Quero participar</a>
+                <a class="hero-actionsmsg" href="https://wa.me/5541999224974?text=Olá!%20Gostaria%20de%20mais%20informações."
+                  target="_blank" rel="noopener noreferrer">
+                  <ion-icon name="logo-whatsapp"></ion-icon>WhatsApp</a>
+            
+        </div>
+    </header>
+
+    <!-- ====================  main ==================== -->
+    <main>
+        <section class="hero">
+            <div class="container hero-grid">
+                <div class="hero-copy">
+                    <span class="eyebrow">Fidelidade que valoriza o cliente</span>
+
+                    <h1>Cadastre-se e ganhe um giro na nossa roleta exclusiva.</h1>
+                    <p>A cada cadastro, o cliente recebe uma chance de ganhar desconto especial. E a cada 3 tatuagens realizadas, ganha mais 1 giro para continuar acumulando vantagens.</p>
+
+                    <div class="hero-actions">
+                        <a class="btn btn-primary" href="#cadastro">Participar agora</a>
+                        <a class="btn btn-secondary" href="#como-funciona">Saiba mais</a>
+                    </div>
+
+                    <!-- Apresenta informações  -->
+                    <div class="stats">
+                        <div>
+                            <strong>+3</strong>
+                            <span>Tatuagens = +1 giro</span>
+                        </div>
+
+                        <div>
+                            <strong>1</strong>
+                            <span>Giro no cadastro</span>
+                        </div>
+
+                        <div>
+                            <strong>VIP</strong>
+                            <span>Benefícios exclusivos</span>
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- -------- Roleta  -------- -->
+                <div class="wheel-card">
+                    <div class="wheel-wrap">
+                        <div class="wheel-shadow"></div>
+                        <div class="wheel">
+                            <div class="wheel-center">GO</div>
+
+                            <!-- Segmentos da roleta com seus respectivos prêmios -->
+                            <span class="segment s1">5%</span>
+                            <span class="segment s2">10%</span>
+                            <span class="segment s3">15%</span>
+                            <span class="segment s4">VIP</span>
+                            <span class="segment s5">7%</span>
+                            <span class="segment s6">12%</span>
+
+                        </div>
+                    </div>
+
+                    <button class="spin-btn" id="spinButton">Girar roleta</button>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- como funciona -->
+        <section id="como-funciona" class="section">
+            <div class="container">
+                <div class="section-header">
+                    <span class="eyebrow dark">Como funciona</span>
+                    <h2>Simples, divertido e feito para fidelizar</h2>
+                </div>
+                <div class="steps">
+
+                  <!-- -------- Etapa 1 -------- -->
+                    <article class="step-card">
+                        <div class="step-number">01</div>
+                        <h3>Cadastro</h3>
+                        <p>O cliente se cadastra e ganha automaticamente 1 giro na roleta.</p>
+                    </article>
+
+                    <!-- -------- Etapa 2 -------- -->
+                    <article class="step-card">
+                        <div class="step-number">02</div>
+                        <h3>Desconto</h3>
+                        <p>Ao girar, ele pode ganhar uma porcentagem especial de desconto.</p>
+                    </article>
+
+                    <!-- -------- Etapa 3 -------- -->
+                    <article class="step-card">
+                        <div class="step-number">03</div>
+                        <h3>Fidelização</h3>
+                        <p>A cada 3 tatuagens realizadas, ele recebe mais 1 giro e mais vantagens.</p>
+                    </article>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== BENEFÍCIOS ==================== -->
+
+        <section id="beneficios" class="section alt">
+            <div class="container">
+                <div class="section-header">
+                    <span class="eyebrow dark">Benefícios</span>
+                    <h2>Mais vantagens para quem escolhe a gente</h2>
+                </div>
+                <div class="benefits-grid">
+
+                    <!-- -------- Benefício 1 -------- -->
+                    <div class="benefit-card">
+                        <span>🎯</span>
+                        <h3>Desconto real</h3>
+                        <p>Clientes ganham percentual de desconto em tatuagens e serviços.</p>
+                    </div>
+
+                    <!-- -------- Benefício 2 -------- -->
+                    <div class="benefit-card">
+                        <span>🔥</span>
+                        <h3>Mais engajamento</h3>
+                        <p>O sistema cria interesse, expectativa e interação constante com a marca.</p>
+                    </div>
+
+                    <!-- -------- Benefício 3 -------- -->
+                    <div class="benefit-card">
+                        <span>💬</span>
+                        <h3>Melhor relacionamento</h3>
+                        <p>Uma forma simples de valorizar cada cliente e fortalecer a fidelização.</p>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== CHAMADA PARA FIDELIZAÇÃO ==================== -->
+        <section id="fidelizar" class="section cta-section">
+            <div class="container cta-box">
+                <div>
+                    <span class="eyebrow dark">Fidelizar é valorizar</span>
+                    <h2>Uma estratégia simples, moderna e que gera mais clientes.</h2>
+                </div>
+                <a class="btn btn-primary" href="#cadastro">Quero participar</a>
+            </div>
+        </section>
+
+        <!-- ==================== FORMULÁRIO DE CADASTRO ==================== -->
+        <section id="cadastro" class="section form-section">
+    <div class="container form-box">
+
+        <div class="form-copy">
+            <span class="eyebrow dark">Cadastro</span>
+            <h2>Ganhe seu primeiro giro</h2>
+            <p>Entre em contato e participe da nossa roleta de fidelidade.</p>
+        </div>
+
+        
+<!-- CAIXINHA DO LOGIN/CADASTRO -->
+<div class="formulario">
+    <div class="btn-form">
+        <span onclick="mostrarEntrar()">Entrar</span>
+        <span onclick="mostrarCadastro()">Cadastro</span>
+        <hr id="Indicador">
+    </div>
+
+    <!-- CADASTRO -->
+    <form class="lead-form" method="post" id="CadastroSite">
+        <input type="text" name="nome" placeholder="Seu nome" required>
+        <input type="tel" name="telefone" id="telefone" placeholder="Telefone" required>
+        <input type="email" name="email" placeholder="Email de acesso" required>
+        <input type="password" name="senha" placeholder="Crie uma senha" minlength="8" required>
+        <button type="submit" name="sendCad" class="btn btn-primary">Cadastrar</button>
+    </form>
+
+    <!-- LOGIN -->
+    <form class="lead-form2" method="post" id="EntrarPainel">
+        <input type="text" name="email" id="loginAcesso" placeholder="E-mail ou telefone de acesso" required>
+        <input type="password" name="senha" placeholder="Digite sua senha" required>
+        <button type="submit" name="senEntrar" class="btn btn-primary">Entrar</button>
+        <a href="esqueci-senha.html">Esqueci minha senha</a>
+    </form>
+</div>
+
+</section>
+    </main>
+
+    <!-- ==================== RODAPÉ ==================== -->
+    <footer class="footer">
+        <div class="container footer-inner">
+            <span>© 2026 Roleta da Fidelidade</span>
+            <span>Seu próximo desconto está esperando.</span>
+        </div>
+    </footer>
+
+    <!-- ==================== JAVASCRIPT ==================== -->
+    <script src="script.js"></script>
+    <script src="script.js" defer></script>
+    <!-- Início config telefone -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/inputmask/5.0.9/inputmask.min.js"></script>
+<script>
+const campoTelefone = document.getElementById('telefone');
+campoTelefone.addEventListener('input', function () {
+    let numeros = this.value.replace(/\D/g, '').substring(0, 11);
+    let formatado = '';
+
+    if (numeros.length > 0) {
+        formatado = '(' + numeros.substring(0, 2);
+
+        if (numeros.length >= 3) {
+            formatado += ') ' + numeros.substring(2, 7);
+        }
+
+        if (numeros.length > 7) {
+            formatado += '-' + numeros.substring(7, 11);
+        }
+    }
+    this.value = formatado;
+});
+</script>
+
+<!-- Fim config telefone -->
+</body>
+</html>

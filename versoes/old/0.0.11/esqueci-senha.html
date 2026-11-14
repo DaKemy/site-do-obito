@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recuperar senha | Roleta da Fidelidade</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <main>
+        <section class="section form-section">
+            <div class="container form-box">
+                <div class="form-copy">
+                    <span class="eyebrow dark">Sua conta</span>
+                    <h1>Recuperar senha</h1>
+                    <p>Enviaremos um link de redefinição para o e-mail confirmado da sua conta.</p>
+                </div>
+                <div class="formulario">
+                    <form id="RecuperarSenha" class="lead-form2">
+                        <input type="email" name="email" placeholder="Digite seu e-mail" autocomplete="email" required>
+                        <button type="submit" class="btn btn-primary">Enviar link</button>
+                    </form>
+                    <form id="ResetarSenha" class="lead-form2" hidden>
+                        <input type="password" name="password" placeholder="Nova senha (mín. 8 caracteres)" minlength="8" autocomplete="new-password" required>
+                        <button type="submit" class="btn btn-primary">Salvar nova senha</button>
+                    </form>
+                    <p id="accountMessage" class="account-message" aria-live="polite"></p>
+                    <a href="index.html#cadastro">Voltar para entrar</a>
+                </div>
+            </div>
+        </section>
+    </main>
+    <script src="login.js" defer></script>
+</body>
+</html>
