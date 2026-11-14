@@ -119,6 +119,7 @@ py -m unittest test_email -v
 Execute-o somente contra um banco de testes isolado, nunca contra produção:
 
 ```powershell
+cd "mvp-tattoo"
 py -m unittest test_auth -v
 ```
 
