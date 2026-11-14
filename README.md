@@ -72,19 +72,22 @@ pública não exige autenticação; para enviar alterações, a pessoa precisa e
 no VS Code com sua própria conta GitHub e ter permissão de escrita no
 repositório.
 
-1. Instale Git for Windows. O script abaixo pode oferecer sua instalação pelo
-   `winget`, pedindo confirmação antes.
-2. Baixe o repositório e abra a versão correta no VS Code pelo PowerShell local:
+1. Abra o **PowerShell local do Windows** (não o terminal remoto do Live Share)
+   e baixe o script da raiz do repositório:
 
    ```powershell
-   git clone --branch main --single-branch https://github.com/DaKemy/site-do-obito.git "$HOME\source\site-do-obito"
-   cd "$HOME\source\site-do-obito"
-   powershell -ExecutionPolicy Bypass -File ".\scripts\preparar-colaboradora.ps1"
+   $script = Join-Path $HOME "Downloads\preparar-colaboradora.ps1"
+   Invoke-WebRequest "https://raw.githubusercontent.com/DaKemy/site-do-obito/main/scripts/preparar-colaboradora.ps1" -OutFile $script
+   powershell -ExecutionPolicy Bypass -File $script
    ```
 
-   O script também reconhece a pasta padrão se já existir, atualiza `main`
-   somente quando a cópia está limpa e abre `versoes\0.0.2` no VS Code. Ele não
-   apaga arquivos nem envia alterações automaticamente.
+   O script pede confirmação antes de instalar Git pelo `winget`, clona o
+   repositório público em `source\site-do-obito` e abre `versoes\0.0.2` no
+   VS Code. Se Git já estiver instalado e o clone existir, só atualiza `main`
+   quando não há alterações locais. Ele não apaga arquivos nem envia mudanças.
+2. No VS Code, entre com sua conta GitHub para poder publicar contribuições.
+   O download público não precisa de login; para enviar commits, a conta precisa
+   ter acesso ao repositório.
 3. Faça cada tarefa em uma branch própria, por exemplo
    `muichi1/ajuste-da-home` ou `tiekenshi/correcao-da-roleta`. Use o Source
    Control do VS Code para criar a branch, revisar os arquivos, fazer commit e
