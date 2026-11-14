@@ -8,8 +8,8 @@ equipe de desenvolvimento administrar contas e prêmios.
 ## Qual pasta é a versão atual?
 
 **A versão principal está na raiz do repositório.** Comece por `index.html`,
-`guia.html` e `mvp-tattoo/app.py`. A pasta `old/` contém versões e código
-arquivados; não use esses arquivos para novas alterações.
+`guia.html` e `mvp-tattoo/app.py`. `old/` guarda o código legado. A antiga
+cópia de compatibilidade em `versoes/0.0.2/` não deve receber novas alterações.
 
 Para entender a estrutura e acompanhar os fluxos, abra o
 [guia interativo](./guia.html). As instruções de instalação, configuração,
