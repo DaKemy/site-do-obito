@@ -110,14 +110,14 @@ else {
     Invoke-Git -Arguments @('clone', '--branch', 'main', '--single-branch', $repositoryUrl, $repositoryPath)
 }
 
-$workspacePath = Join-Path $repositoryPath 'versoes\0.0.2'
+$workspacePath = $repositoryPath
 if (-not (Test-Path -LiteralPath (Join-Path $workspacePath 'mvp-tattoo\app.py'))) {
-    throw "O clone nao contem os arquivos esperados da versao 0.0.2: $workspacePath"
+    throw "O clone nao contem os arquivos esperados do site: $workspacePath"
 }
 
 Write-Host ''
 Write-Host 'Projeto pronto para abrir no VS Code.'
-Write-Host "Pasta atual do site: $workspacePath"
+Write-Host "Pasta do projeto para abrir no VS Code: $workspacePath"
 Write-Host 'O clone publico nao exige senha para baixar. Para enviar commits, entre no GitHub pelo VS Code ou Git Credential Manager.'
 Write-Host 'As alteracoes nao sao enviadas automaticamente: crie uma branch, faca commit e envie um Pull Request.'
 Write-Host 'Nao compartilhe nem envie arquivos .env, bancos locais ou uploads.'
@@ -142,6 +142,6 @@ if (-not $SkipOpen) {
         & $codeExecutable --new-window $workspacePath
     }
     else {
-        Write-Warning 'O comando code nao foi encontrado. Abra manualmente a pasta versoes\0.0.2 no VS Code.'
+        Write-Warning 'O comando code nao foi encontrado. Abra manualmente a raiz do clone no VS Code.'
     }
 }
