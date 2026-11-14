@@ -16,6 +16,14 @@ Para entender a estrutura e acompanhar os fluxos, abra o
 instalação, configuração, testes e operação estão no
 [README da versão principal](./versoes/0.0.2/README.md).
 
+## Colaboração no VS Code
+
+Se você usa o clone do GitHub Desktop em
+`D:\AsVeizDesenvolve\site-do-obito`, abra essa pasta no VS Code e siga
+[`INSTRUCOES-MUICHI1.md`](./INSTRUCOES-MUICHI1.md). O Copilot Chat encontra
+orientações do projeto em `.github/copilot-instructions.md`; o prompt
+**Preparar Site do Obito (Muichi1)** está em `.github/prompts/`.
+
 ## O que cada parte faz?
 
 | Parte | Responsabilidade |
