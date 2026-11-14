@@ -65,6 +65,40 @@ HTML (tela) → JavaScript (pedido HTTP) → Flask (validação e regras) → Po
 Mais detalhes e configurações de e-mail estão no
 [README da versão principal](./versoes/0.0.2/README.md).
 
+## Trabalhar em conjunto no GitHub
+
+Cada pessoa trabalha em um clone local do mesmo repositório. Baixar a cópia
+pública não exige autenticação; para enviar alterações, a pessoa precisa entrar
+no VS Code com sua própria conta GitHub e ter permissão de escrita no
+repositório.
+
+1. Instale Git for Windows. O script abaixo pode oferecer sua instalação pelo
+   `winget`, pedindo confirmação antes.
+2. Baixe o repositório e abra a versão correta no VS Code pelo PowerShell local:
+
+   ```powershell
+   git clone --branch main --single-branch https://github.com/DaKemy/site-do-obito.git "$HOME\source\site-do-obito"
+   cd "$HOME\source\site-do-obito"
+   powershell -ExecutionPolicy Bypass -File ".\scripts\preparar-colaboradora.ps1"
+   ```
+
+   O script também reconhece a pasta padrão se já existir, atualiza `main`
+   somente quando a cópia está limpa e abre `versoes\0.0.2` no VS Code. Ele não
+   apaga arquivos nem envia alterações automaticamente.
+3. Faça cada tarefa em uma branch própria, por exemplo
+   `muichi1/ajuste-da-home` ou `tiekenshi/correcao-da-roleta`. Use o Source
+   Control do VS Code para criar a branch, revisar os arquivos, fazer commit e
+   publicar a branch.
+4. Abra um Pull Request para `main`; depois que as mudanças forem integradas,
+   a outra pessoa atualiza sua cópia com `git pull --ff-only origin main`
+   enquanto estiver na branch `main`.
+
+O Live Share é opcional para edição em tempo real, mas não sincroniza commits
+nem substitui o GitHub. Live Server mostra arquivos estáticos e não executa o
+backend Flask. Para testar o site completo, use a tarefa **Site do Obito:
+iniciar Flask** em `Terminal > Run Task` e configure `.env` localmente. Não
+compartilhe esse arquivo.
+
 ## Testes
 
 Os testes de e-mail usam chamadas simuladas e não enviam mensagens reais:
