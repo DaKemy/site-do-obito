@@ -19,8 +19,158 @@
   padding: 0;
 }
 
-html {
-  scroll-behavior: smooth;
+.divisoria-banner {
+    width: 100%;
+    height: 1px;
+    border: none;
+    background: #da0000;
+    box-shadow: 0 0 10px #ff0000;
+    margin: 30px 0;
+}
+
+/* WALLPAPER EXCLUSIVO DA PÁGINA */
+
+html, body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+    background: #000 !important;
+    overflow-x: hidden;
+    position: relative;
+    isolation: isolate;
+    scroll-behavior: smooth;
+}
+
+/* VÍDEO FIXO EM TODA A TELA */
+.back-video {
+    position: fixed;
+    inset: 0;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center center;
+    z-index: -1;
+    pointer-events: none;
+}
+
+
+/* MUSICA */
+.controle-musica {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: auto;
+    background: rgba(15, 15, 15, 0.85);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 30px;
+    color: #fff;
+    font-size: 10px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+/* EFEITO HOVER */
+.controle-musica:hover {
+    transform: translateY(-3px);
+}
+
+/* BOTÃO */
+.btn-primary11 {
+    width: 35px;
+    height: 35px;
+    min-width: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    background: transparent;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: 0.3s ease;
+}
+
+/* ÍCONE */
+.btn-primary11 ion-icon {
+    font-size: 18px !important;
+    display: block;
+    flex-shrink: 0;
+    margin-left: 8px;
+}
+
+.btn-primary11:hover {
+    color: #ff4b18;
+    transform: scale(1.1);
+}
+
+/* VOLUME ESCONDIDO */
+.controle-volume {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 0;
+    opacity: 0;
+    overflow: hidden;
+    visibility: hidden;
+    transition: all 0.4s ease;
+}
+
+/* VOLUME AO PASSAR O MOUSE */
+.controle-musica:hover .controle-volume {
+    width: 120px;
+    opacity: 1;
+    visibility: visible;
+}
+
+/* ÍCONE DO VOLUME */
+.controle-volume ion-icon {
+    font-size: 20px;
+    color: #f79503;
+    flex-shrink: 0;
+}
+
+/* BARRA DE VOLUME */
+.controle-volume input {
+    width: 85px;
+    min-width: 85px;
+    height: 3px;
+    cursor: pointer;
+    accent-color: #dd3604;
+    appearance: none;
+    -webkit-appearance: none;
+    background: #777;
+    border-radius: 10px;
+}
+
+/* BOLINHA - CHROME / OPERA */
+.controle-volume input::-webkit-slider-thumb {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 11px;
+    height: 11px;
+    background: #802003;
+    border-radius: 50%;
+    border: 2px solid #ff5100;
+    cursor: pointer;
+}
+
+/* BOLINHA - FIREFOX */
+.controle-volume input::-moz-range-thumb {
+    width: 9px;
+    height: 9px;
+    background: #802003;
+    border-radius: 50%;
+    border: 2px solid #ff5100;
+    cursor: pointer;
 }
 
 @font-face {
@@ -30,21 +180,13 @@ html {
     font-style: normal;
 }
 
-body {
-    font-family: 'Naruto', fantasy !important;
-}
-
 /* Fundo, tipografia e medidas comuns a todas as seções da página. */
 body {
   background:
-    radial-gradient(
-      circle at top,
-      rgba(114, 29, 4, 0.623),
-      transparent 35%
-    ),
-    var(--bg);
+  radial-gradient(circle at top, rgba(114, 29, 4, 0.623), transparent 35%), var(--bg);
   color: var(--text);
   line-height: 1.6;
+  font-family: 'Naruto', fantasy !important;
 }
 
 h1, h2, h3 {
@@ -80,6 +222,9 @@ img {
   margin: 0 auto;
 }
 
+.hero-banner{
+  box-shadow: #380101 0px 0px 20px 10px;
+}
 
 .topbar {
   position: sticky;
@@ -207,39 +352,13 @@ img {
     position: relative;
 }
 
-@media (max-width: 560px) {
-    .btn-primary1 {
-        width: auto;
-        padding: 0.75rem 0.9rem;
-        font-size: 0.82rem;
-    }
-
-    .nav .btn {
-        width: auto;
-    }
-
-    .brand img {
-        width: 45px;
-        height: 45px;
-    }
-
-    .nav {
-        min-height: 68px;
-        flex-wrap: wrap;
-        gap: 8px;
-        padding: 8px 0;
-    }
-
-    .brand {
-        gap: 6px;
-        font-size: 0.9rem;
-    }
-}
-
 /* Botão flutuante de mensagem */
-.hero-actionsmsg {
+
+/* BOTÃO 2 */
+.hero-actionsmsg2 {
+    z-index: 9999;
     position: fixed;
-    bottom: 20px;
+    bottom: 75px;
     right: 20px;
     display: inline-flex;
     align-items: center;
@@ -247,34 +366,155 @@ img {
     border: none;
     border-radius: 30px;
     padding: 8px 12px;
-    background-color: #ff0808d3;
+    background: linear-gradient(90deg, #7b09a8 0%, #72071e 50%, #f15d07 100%);
     color: #fff;
     text-decoration: none;
     font-size: 16px;
     font-weight: bold;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-    transition: transform 0.3s ease, background-color 0.3s ease;
+    transition: transform 0.3s ease, background 0.3s ease;
     gap: 8px;
-    margin-top: 20px;
 }
 
-.hero-actionsmsg:hover {
-    background-color: #f85e04;
+/* BOTÃO 2 - HOVER */
+.hero-actionsmsg2:hover {
+    background: linear-gradient(90deg, #f15d07 0%, #ff0000 50%, #7b09a8 100%);
     color: #fff;
     transform: translateY(-3px);
 }
 
-.hero-actionsmsg ion-icon {
+
+/* BOTÃO 1 */
+.hero-actionsmsg {
+    z-index: 9999;
+    position: fixed;
+    bottom: 20px;
+    width: 144px;
+    right: 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 30px;
+    padding: 8px 12px;
+    background: linear-gradient(90deg, #c00909 0%, #ca3d05 50%, #21f7058c 100%);
+    color: #fff;
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: bold;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    transition: transform 0.3s ease, background 0.3s ease;
+    gap: 8px;
+    margin-top: 20px;
+}
+
+/* BOTÃO 1 - HOVER */
+.hero-actionsmsg:hover {
+    background: linear-gradient(90deg, #21f705 0%, #ca3d05 50%, #c00909 100%);
+    color: #fff;
+    transform: translateY(-3px);
+}
+
+.hero-actionsmsg ion-icon, .hero-actionsmsg2 ion-icon {
     font-size: 20px;
 }
 
+/* CELULAR NAO MEXER NÃO SEPARAR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
+/* ==========================================
+   RESPONSIVIDADE - CELULARES
+========================================== */
+
 @media (max-width: 600px) {
+
+    /* BOTÃO WHATSAPP */
     .hero-actionsmsg {
         bottom: 15px;
         right: 15px;
         padding: 12px 16px;
         font-size: 14px;
+        z-index: 9999;
     }
+
+    /* BOTÃO PRINCIPAL */
+    .btn-primary1 {
+        width: auto;
+        padding: 0.75rem 0.9rem;
+        font-size: 0.82rem;
+    }
+
+    /* NAVEGAÇÃO */
+    .nav {
+        min-height: 68px;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 8px 12px;
+    }
+
+    /* LOGO */
+    .brand {
+        gap: 6px;
+        font-size: 0.9rem;
+    }
+
+    .brand img {
+        width: 45px;
+        height: 45px;
+        object-fit: contain;
+    }
+
+    /* BOTÕES DO MENU */
+    .nav .btn {
+        width: auto;
+    }
+
+}
+
+@media (max-width: 600px) {
+
+    .back-video {
+        position: fixed;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center center;
+    }
+
+}
+
+/* ==========================================
+   TELAS MUITO PEQUENAS
+========================================== */
+
+@media (max-width: 380px) {
+
+    .nav {
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .brand {
+        font-size: 0.8rem;
+    }
+
+    .brand img {
+        width: 38px;
+        height: 38px;
+    }
+
+    .btn-primary1 {
+        font-size: 0.75rem;
+        padding: 0.65rem 0.75rem;
+    }
+
+    .hero-actionsmsg {
+        bottom: 12px;
+        right: 10px;
+        padding: 10px 13px;
+        font-size: 12px;
+    }
+
 }
 
 /* Botão principal com degradê e sombra. */
@@ -293,7 +533,6 @@ img {
   border: 1px solid var(--line);
 }
 
-
 /* ==========================================================
    6. BANNER PRINCIPAL (HERO)
    ========================================================== */
@@ -304,7 +543,6 @@ img {
   padding: 72px 0 50px;
 }
 
-
 /* Divide o banner em duas colunas:
    uma para o texto e outra para a roleta. */
 
@@ -314,7 +552,6 @@ img {
   align-items: center;
   gap: 36px;
 }
-
 
 /* Estilo dos pequenos textos de destaque. */
 
@@ -331,7 +568,6 @@ img {
   font-weight: 700;
 }
 
-
 /* Variante do eyebrow utilizada em áreas com fundo claro
    ou que precisam de um destaque mais discreto. */
 
@@ -339,7 +575,6 @@ img {
   background: rgba(255, 138, 4, 0.1);
   color: #f1b260;
 }
-
 
 /* Título principal do banner.
    clamp permite que o tamanho varie conforme a tela. */
@@ -351,7 +586,6 @@ img {
   margin-bottom: 18px;
 }
 
-
 /* Texto descritivo do banner. */
 
 .hero-copy p {
@@ -359,7 +593,6 @@ img {
   font-size: 1.08rem;
   max-width: 620px;
 }
-
 
 /* Organiza os botões do banner. */
 
@@ -370,7 +603,6 @@ img {
   margin-top: 30px;
   flex-wrap: wrap;
 }
-
 
 /* ==========================================================
    7. ESTATÍSTICAS DO BANNER
@@ -386,13 +618,11 @@ img {
   flex-wrap: wrap;
 }
 
-
 /* Define largura mínima para cada indicador. */
 
 .stats div {
   min-width: 120px;
 }
-
 
 /* Destaque dos números e informações principais. */
 
@@ -402,14 +632,12 @@ img {
   color: var(--text);
 }
 
-
 /* Texto explicativo dos indicadores. */
 
 .stats span {
   color: var(--muted);
   font-size: 0.82rem;
 }
-
 
 /* ==========================================================
    8. CARD DA ROLETA
@@ -418,18 +646,12 @@ img {
 /* Painel que envolve a roleta e o botão de girar. */
 
 .wheel-card {
-  background: linear-gradient(
-    180deg,
-    rgba(27, 12, 12, 0.95),
-    rgba(95, 3, 3, 0.651)
-  );
-
+  background: linear-gradient(180deg, rgba(27, 12, 12, 0.95), rgba(95, 3, 3, 0.651));
   border: 1px solid var(--line);
   border-radius: 30px;
   padding: 28px;
   box-shadow: 0 30px 70px var(--shadow);
 }
-
 
 /* Container que centraliza a roleta e sua sombra. */
 
@@ -439,7 +661,6 @@ img {
   place-items: center;
   margin-bottom: 20px;
 }
-
 
 /* Efeito de sombra e iluminação atrás da roleta. */
 
@@ -456,7 +677,6 @@ img {
   filter: blur(30px);
 }
 
-
 /* ==========================================================
    9. ROLETA
    ========================================================== */
@@ -472,7 +692,6 @@ img {
   --wheel-label-radius: 128px;
   border-radius: 50%;
   overflow: hidden;
-
   background: conic-gradient(
     #b65200 0deg 60deg,
     #990000 60deg 120deg,
@@ -481,7 +700,6 @@ img {
     #ff4901 240deg 300deg,
     #7e0a0a 300deg 360deg
   );
-
   border: 12px solid rgba(255, 0, 0, 0.08);
   box-shadow: inset 0 0 40px rgba(155, 3, 3, 0.08);
 
@@ -491,7 +709,6 @@ img {
   /* Animação utilizada quando a roleta gira. */
   transition: transform 3s cubic-bezier(0.14, 0.95, 0.25, 1);
 }
-
 
 /* Cria uma camada interna decorativa na roleta. */
 
@@ -504,7 +721,6 @@ img {
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-
 /* ==========================================================
    10. CENTRO DA ROLETA
    ========================================================== */
@@ -516,21 +732,16 @@ img {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-
   width: 84px;
   height: 84px;
   border-radius: 50%;
-
   background: linear-gradient(135deg, #1f1f23, #121214);
   border: 3px solid rgba(255, 255, 255, 0.12);
-
   display: grid;
   place-items: center;
-
   font-weight: 800;
   z-index: 2;
 }
-
 
 /* ==========================================================
    11. SEGMENTOS E PRÊMIOS DA ROLETA
@@ -543,18 +754,13 @@ img {
   position: absolute;
   width: 100%;
   height: 100%;
-
   display: grid;
   place-items: center;
-
   font-size: 1.05rem;
   font-weight: 700;
   color: white;
-
-  /* Sombra para melhorar a leitura dos prêmios. */
   text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
 }
-
 
 /* Posiciona cada prêmio em uma parte da roleta.
    rotate define o ângulo e translateY desloca o texto. */
@@ -562,27 +768,21 @@ img {
 .s1 {
   transform: rotate(30deg) translateY(-128px);
 }
-
 .s2 {
   transform: rotate(90deg) translateY(-128px);
 }
-
 .s3 {
   transform: rotate(150deg) translateY(-128px);
 }
-
 .s4 {
   transform: rotate(210deg) translateY(-128px);
 }
-
 .s5 {
   transform: rotate(270deg) translateY(-128px);
 }
-
 .s6 {
   transform: rotate(330deg) translateY(-128px);
 }
-
 
 /* ==========================================================
    12. BOTÃO GIRAR ROLETA
@@ -661,7 +861,6 @@ img {
   letter-spacing: -0.04em;
 }
 
-
 /* ==========================================================
    15. SEÇÃO COMO FUNCIONA
    ========================================================== */
@@ -674,7 +873,6 @@ img {
   gap: 22px;
 }
 
-
 /* ==========================================================
    16. ESTILO GERAL DOS CARDS E PAINÉIS
    ========================================================== */
@@ -682,15 +880,11 @@ img {
 /* Estilo compartilhado entre cards, formulário e chamada final.
    Evita repetir as mesmas propriedades em vários lugares. */
 
-.step-card,
-.benefit-card,
-.form-box,
-.cta-box {
-  background: rgba(255, 255, 255, 0.025);
+.step-card, .benefit-card, .form-box, .cta-box {
+  background: rgba(51, 1, 1, 0.336);
   border: 1px solid var(--line);
   border-radius: 22px;
 }
-
 
 /* Espaçamento interno dos cards de etapas. */
 
@@ -698,25 +892,20 @@ img {
   padding: 26px;
 }
 
-
 /* Número de cada etapa do funcionamento. */
 
 .step-number {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-
   width: 52px;
   height: 52px;
   border-radius: 14px;
-
   background: rgba(226, 5, 5, 0.301);
   color: #e9862a;
-
   font-weight: 800;
   margin-bottom: 18px;
 }
-
 
 /* Títulos dos cards de etapas e benefícios. */
 
@@ -725,7 +914,6 @@ img {
   margin-bottom: 10px;
   font-size: 1.3rem;
 }
-
 
 /* Textos descritivos dos cards e do formulário. */
 

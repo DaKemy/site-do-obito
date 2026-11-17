@@ -14,10 +14,7 @@
     <!-- adaptar corretamente a outros dispositivos -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Roleta da Fidelidade | Versão principal 0.0.2</title>
-    <meta
-        name="description"
-        content="Sistema de fidelização com roleta de descontos para clientes de tatuagem."
-    />
+    <meta name="description" content="Sistema de fidelização com roleta de descontos para clientes de tatuagem."/>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
@@ -26,8 +23,37 @@
 
 <body>
 
-    <!-- ==================== inicio ==================== -->
-    <!-- Cabeçalho fixo: identidade do site, navegação e acesso do desenvolvedor. -->
+<!-- ====================  Wallpaper :D ==================== -->
+    <video autoplay muted loop playsinline class="back-video">
+        <source src="assets/img/obt.mp4" type="video/mp4">
+    </video>
+
+<!-- ====================  Song Theme :D ==================== -->
+        <!-- CONTROLE DE MÚSICA -->
+    <div class="controle-musica">
+        <button id="btnSom" class="btn-primary11">
+            <ion-icon name="musical-notes-sharp"></ion-icon>
+        </button>
+
+        <div class="controle-volume">
+            <ion-icon name="volume-high-outline"></ion-icon>
+            <input type="range" id="volumeSom" min="0" max="1" step="0.01" value="0.4">
+        </div>
+        
+    </div>
+
+    <!-- ÁUDIO -->
+    <audio id="somSite" preload="auto" loop>
+        <source src="assets/img/obtmsc.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- ÁUDIO CADASTRO -->
+    <audio id="somCadastro" preload="auto">
+        <source src="assets/img/cadastro.mp3" type="audio/mpeg">
+    </audio>
+
+<!-- ==================== inicio ==================== -->
+
     <header class="topbar">
         <div class="container nav">
             <div class="brand">
@@ -53,15 +79,20 @@
             
         </div>
     </header>
-    <!-- Atalho flutuante para iniciar uma conversa pelo WhatsApp. -->
+
+    <!--  Instagram -->
+    <a class="hero-actionsmsg2" href="https://www.instagram.com/blktattoo.ink?cplk=MTA2anFxa3lzdWg3Yg==" target="_blank" rel="noopener noreferrer">
+        <ion-icon name="logo-instagram"></ion-icon>Instagram
+    </a>
+
+    <!--  WhatsApp. -->
     <a class="hero-actionsmsg" href="https://wa.me/5541999224974?text=Olá!%20Gostaria%20de%20mais%20informações."
        target="_blank" rel="noopener noreferrer">
         <ion-icon name="logo-whatsapp"></ion-icon>WhatsApp
     </a>
 
-    <!-- ====================  main ==================== -->
+<!-- ====================  main ==================== -->
     <main>
-        <!-- Apresentação: explica a promoção e mostra a roleta interativa. -->
         <section class="hero">
             <div class="container hero-grid">
                 <div class="hero-copy">
@@ -75,7 +106,7 @@
                         <a class="btn btn-secondary" href="#como-funciona">Saiba mais</a>
                     </div>
 
-                    <!-- Apresenta informações  -->
+<!-- Apresenta informações  -->
                     <div class="stats">
                         <div>
                             <strong>+3</strong>
@@ -94,34 +125,17 @@
                     </div>
                 </div>
 
-
-                <!-- -------- Roleta  -------- -->
-                <div class="wheel-card">
-                    <div class="wheel-wrap">
-                        <div class="wheel-shadow"></div>
-                        <div class="wheel">
-                            <div class="wheel-center">GO</div>
-
-                            <!-- Segmentos da roleta com seus respectivos prêmios -->
-                            <span class="segment s1">5%</span>
-                            <span class="segment s2">10%</span>
-                            <span class="segment s3">15%</span>
-                            <span class="segment s4">20%</span>
-                            <span class="segment s5">30%</span>
-                            <span class="segment s6">40%</span>
-
-                        </div>
-                    </div>
-
-                    <button class="spin-btn" id="spinButton" type="button">Girar roleta</button>
-                    <p id="spinMessage" class="account-message" aria-live="polite"></p>
-
-                </div>
+<!-- -------- Banner  -------- -->
+        <div class="hero-banner">
+            <img src="assets/img/banner.png" alt="BlkTattoo" width="500px">
+        </div>
+        
             </div>
         </section>
+        <hr class="divisoria-banner">
 
-        <!-- como funciona -->
-        <!-- Explica, em três etapas, cadastro, prêmio e retorno do cliente. -->
+<!-- como funciona -->
+
         <section id="como-funciona" class="section">
             <div class="container">
                 <div class="section-header">
@@ -155,9 +169,8 @@
             </div>
         </section>
 
-        <!-- ==================== BENEFÍCIOS ==================== -->
+<!-- ==================== BENEFÍCIOS ==================== -->
 
-        <!-- Benefícios comerciais oferecidos pelo programa de fidelidade. -->
         <section id="beneficios" class="section alt">
             <div class="container">
                 <div class="section-header">
@@ -191,8 +204,8 @@
             </div>
         </section>
 
-        <!-- ==================== CHAMADA PARA FIDELIZAÇÃO ==================== -->
-        <!-- Chamada final: direciona a pessoa interessada ao formulário. -->
+<!-- ==================== CHAMADA PARA FIDELIZAÇÃO ==================== -->
+
         <section id="fidelizar" class="section cta-section">
             <div class="container cta-box">
                 <div>
@@ -203,8 +216,8 @@
             </div>
         </section>
 
-        <!-- ==================== FORMULÁRIO DE CADASTRO ==================== -->
-        <!-- Área de conta do cliente: alterna entre cadastro e login por CPF/e-mail. -->
+<!-- ==================== FORMULÁRIO DE CADASTRO ==================== -->
+
         <section id="cadastro" class="section form-section">
     <div class="container form-box">
 
@@ -213,9 +226,8 @@
             <h2>Ganhe seu primeiro giro</h2>
             <p>Entre em contato e participe da nossa roleta de fidelidade.</p>
         </div>
-
         
-<!-- Contêiner dos formulários e das abas; login.js alterna a aba ativa. -->
+<!-- Contêiner dos formulários -->
 <div class="formulario">
     <div class="btn-form">
         <span id="tabEntrar" role="button" tabindex="0" onclick="mostrarEntrar()">Entrar</span>
@@ -223,17 +235,17 @@
         <hr id="Indicador">
     </div>
 
-    <!-- Cadastro: os atributos name viram as chaves enviadas à API de contas. -->
+    <!-- Cadastro -->
     <form class="lead-form" id="CadastroSite">
         <input type="text" name="name" placeholder="Seu nome" maxlength="120" autocomplete="name" required>
         <input type="tel" name="whatsapp" id="telefone" placeholder="Telefone com DDD" autocomplete="tel" required>
-        <input type="text" name="cpf" placeholder="CPF" inputmode="numeric" autocomplete="off" maxlength="14" required>
+        <input type="text" name="cpf" id="cpf" placeholder="CPF" inputmode="numeric" autocomplete="off" maxlength="14" required>
         <input type="email" name="email" placeholder="E-mail de acesso" autocomplete="email" required>
         <input type="password" name="password" placeholder="Crie uma senha (mín. 8 caracteres)" minlength="8" autocomplete="new-password" required>
         <button type="submit" name="sendCad" class="btn btn-primary">Cadastrar</button>
     </form>
 
-    <!-- Login do cliente: aceita identificador (CPF ou e-mail) e senha. -->
+    <!-- Login  -->
     <form class="lead-form2" id="EntrarPainel">
         <input type="text" name="identifier" id="loginAcesso" placeholder="E-mail ou CPF" autocomplete="username" required>
         <input type="password" name="password" placeholder="Digite sua senha" autocomplete="current-password" required>
@@ -314,16 +326,91 @@
     <footer class="footer">
         <div class="container footer-inner">
             <span>© 2026 Roleta da Fidelidade</span>
-            <span>Seu próximo desconto está esperando.</span>
+            <span style="display: inline-block; transform: translateX(-80px);">
+                Seu próximo desconto está esperando.
+            </span>
         </div>
     </footer>
 
     <!-- ==================== JAVASCRIPT ==================== -->
-    <!-- Scripts separados por responsabilidade; defer espera o HTML ser interpretado. -->
+
     <script src="login.js" defer></script>
     <script src="script.js" defer></script>
     <script src="admin.js" defer></script>
+    <script>
+    const campoCPF = document.getElementById('cpf');
+    campoCPF.addEventListener('input', function () {
+        let cpf = this.value.replace(/\D/g, '');
+        cpf = cpf.substring(0, 11);
+        cpf = cpf.replace(/^(\d{3})(\d)/, '$1.$2');
+        cpf = cpf.replace(/^(\d{3})\.(\d{3})(\d)/, '$1.$2.$3');
+        cpf = cpf.replace(/^(\d{3})\.(\d{3})\.(\d{3})(\d)/, '$1.$2.$3-$4');
+        this.value = cpf;
+    });
+    </script>
 
-<!-- Fim config telefone -->
+    <!-- Script para tocar o som do site -->
+    
+    <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const somSite = document.getElementById("somSite");
+        const btnSom = document.getElementById("btnSom");
+        const volumeSom = document.getElementById("volumeSom");
+
+        // Volume inicial
+        somSite.volume = 0.4;
+        volumeSom.value = 0.4;
+
+        // Atualizar ícone do botão
+        function atualizarBotao() {
+            if (somSite.paused) {
+                btnSom.innerHTML =
+                    '<ion-icon name="play-circle-sharp"></ion-icon>';
+            } else {
+                btnSom.innerHTML =
+                    '<ion-icon name="pause-circle-sharp"></ion-icon>';
+            }
+        }
+
+        // Botão de play e pause
+        btnSom.addEventListener("click", function () {
+            if (somSite.paused) {
+                somSite.play();
+            } else {
+                somSite.pause();
+            }
+        });
+        // Controle de volume
+        volumeSom.addEventListener("input", function () {
+            somSite.volume = volumeSom.value;
+        });
+        // Atualizar ícone quando o áudio mudar
+        somSite.addEventListener("play", atualizarBotao);
+        somSite.addEventListener("pause", atualizarBotao);
+        // Ícone inicial
+        atualizarBotao();
+    });
+    </script>
+
+<!-- Script para tocar o som do cadastro -->
+
+    <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const somCadastro = document.getElementById("somCadastro");
+
+        // Volume do efeito (40%)
+        somCadastro.volume = 0.4;
+
+        // Selecionar formulários de cadastro
+        const botoesCadastro = document.querySelectorAll(".lead-form");
+        botoesCadastro.forEach(function (botao) {
+            botao.addEventListener("click", function () {  //click por submitt pra validar
+                somCadastro.currentTime = 0;
+                somCadastro.play();
+            });
+        });
+    });
+    </script>
+
 </body>
 </html>
