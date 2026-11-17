@@ -1,3 +1,6 @@
+// Interface remanescente do MVP antigo; a versão principal não carrega este arquivo.
+// As rotas atuais redirecionam /mvp para a home, mas os recursos são mantidos
+// para compatibilidade e referência histórica.
 const API = '/api';
 
 const registerForm = document.getElementById('registerForm');
@@ -22,6 +25,7 @@ let currentCustomerId = null;
 let currentRotation = 0;
 
 async function fetchJson(url, options = {}) {
+  // Wrapper HTTP usado pela interface antiga para enviar cookies e tratar erros JSON.
   const headers = new Headers(options.headers || {});
   if (!(options.body instanceof FormData) && options.body && !headers.has('Content-Type')) {
     headers.set('Content-Type', 'application/json');
@@ -38,6 +42,7 @@ function showStatus(message, isError = false) {
 }
 
 function renderLoyaltyGrid(completed = 0) {
+  // Desenha os nove marcadores visuais de progresso do cliente.
   const total = 9;
   const boxes = Array.from({ length: total }, (_, index) => index + 1);
   loyaltyGrid.innerHTML = boxes.map((item) => `
@@ -47,12 +52,14 @@ function renderLoyaltyGrid(completed = 0) {
 }
 
 async function loadCustomerLoyalty() {
+  // Consulta ao backend o total concluído e atualiza os marcadores.
   if (!currentCustomerId) return;
   const data = await fetchJson(`${API}/customers/${currentCustomerId}/loyalty`);
   renderLoyaltyGrid(Math.min(data.loyalty?.completed_tattoos || 0, 9));
 }
 
 function setCustomer(customer) {
+  // Alterna os controles visíveis conforme a sessão de cliente recebida.
   currentCustomerId = customer?.id || null;
   customerLogoutBtn.classList.toggle('hidden', !currentCustomerId);
   registerForm.classList.toggle('hidden', Boolean(currentCustomerId));
@@ -66,6 +73,7 @@ function setCustomer(customer) {
 }
 
 function setAdminVisibility(isLogged) {
+  // Exibe login ou conteúdo administrativo na interface antiga do MVP.
   adminLoginForm.classList.toggle('hidden', isLogged);
   adminContent.classList.toggle('hidden', !isLogged);
 }
@@ -111,6 +119,7 @@ customerLogoutBtn.addEventListener('click', async () => {
 });
 
 spinBtn.addEventListener('click', async () => {
+  // O servidor sorteia o prêmio; este listener apenas anima e mostra o resultado.
   if (!currentCustomerId) {
     resultBox.textContent = 'Entre na sua conta antes de girar.';
     return;
@@ -132,6 +141,7 @@ spinBtn.addEventListener('click', async () => {
 });
 
 ideaForm.addEventListener('submit', async (event) => {
+  // Envia a ideia e eventual imagem de referência como formulário multipart.
   event.preventDefault();
   const formData = new FormData(ideaForm);
   formData.delete('customerId');
@@ -156,6 +166,7 @@ showAdminBtn.addEventListener('click', () => {
 });
 
 adminLoginForm.addEventListener('submit', async (event) => {
+  // Autentica o desenvolvedor na API e carrega os dados do painel antigo.
   event.preventDefault();
   const formData = new FormData(adminLoginForm);
   try {
@@ -185,6 +196,7 @@ logoutAdminBtn.addEventListener('click', async () => {
 });
 
 function escapeHtml(value) {
+  // Protege dados de texto ao montar linhas HTML da tabela antiga.
   return String(value).replace(/[&<>"']/g, (character) => ({
     '&': '&amp;',
     '<': '&lt;',
@@ -195,6 +207,7 @@ function escapeHtml(value) {
 }
 
 async function loadAdminData() {
+  // Carrega a lista para o administrador e liga ações de aprovação de tatuagem.
   try {
     const data = await fetchJson(`${API}/admin/customers`);
     if (!data.customers.length) {

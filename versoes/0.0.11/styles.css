@@ -1,0 +1,1066 @@
+:root {
+  --bg: #080606;               /* Cor de fundo principal */
+  --bg-soft: #2b1919;          /* Fundo secundário */
+  --panel: #4d0b0b;            /* Cor de painéis */
+  --panel-2: #121214;            /* Segunda cor de painel */
+  --text: #f3f3f3;              /* Cor principal dos textos */
+  --muted: #bbbbbb;             /* Cor de textos secundários */
+  --line: rgba(255, 3, 3, 0.788); /* Cor das bordas */
+  --primary: #dd3704b4;            /* Cor principal dos botões */
+  --primary-strong: #d35f00a2;      /* Cor complementar dos botões */
+  --accent: #f88808;             /* Cor de destaque */
+  --shadow: rgba(0, 0, 0, 0.3);   /* Cor das sombras */
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+@font-face {
+    font-family: 'Naruto';
+    src: url('./njnaruto.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+body {
+    font-family: 'Naruto', fantasy !important;
+}
+
+/* Config geral página */
+body {
+  background:
+    radial-gradient(
+      circle at top,
+      rgba(114, 29, 4, 0.623),
+      transparent 35%
+    ),
+    var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+}
+
+h1, h2, h3 {
+    font-family: 'Naruto', fantasy !important;
+    background: linear-gradient(
+        to bottom,
+        #ff0000 0%,
+        #c90000 35%,
+        #e97224 65%,
+        #f19661 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    -webkit-text-stroke: 1px #000;
+    filter: drop-shadow(3px 3px 0 #000);
+    word-spacing: 12px;
+    letter-spacing: 2px;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+.container {
+  width: min(1120px, calc(100% - 32px));
+  margin: 0 auto;
+}
+
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  backdrop-filter: blur(14px);
+  background: rgba(0, 0, 0, 0.75);
+  border-bottom: 1px solid var(--line);
+}
+
+.nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 76px;
+    gap: 20px;
+}
+
+/* ==========================================================
+   marca
+   ========================================================== */
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+    width: auto;
+    flex-shrink: 0;
+}
+
+.brand img {
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
+}
+
+.brand-mark {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, var(--primary), #0a2f2a);
+  color: white;
+  font-size: 14px;
+}
+
+.menu {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    color: var(--muted);
+    font-size: 0.96rem;
+    margin-left: 0;
+}
+
+.menu a:hover {
+  color: var(--text);
+}
+
+/* Botões gerais */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 999px;
+    padding: 0.9rem 1.5rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    color: #f0edec;
+    background-color: #e7a772b9;
+    box-shadow: var(--accent);
+}
+
+.btn-primary1 {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 999px;
+    padding: 0.9rem 1.5rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+    background: linear-gradient(135deg, var(--primary), var(--primary-strong));
+    color: white;
+    box-shadow: 0 10px 26px rgba(155, 4, 4, 0.32);
+    position: relative;
+}
+
+@media (max-width: 560px) {
+    .btn-primary1 {
+        width: auto;
+        padding: 0.75rem 0.9rem;
+        font-size: 0.82rem;
+    }
+
+    .nav .btn {
+        width: auto;
+    }
+
+    .brand img {
+        width: 45px;
+        height: 45px;
+    }
+
+    .nav {
+        min-height: 68px;
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 8px 0;
+    }
+
+    .brand {
+        gap: 6px;
+        font-size: 0.9rem;
+    }
+}
+
+/* Botão flutuante de mensagem */
+.hero-actionsmsg {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 30px;
+    padding: 8px 12px;
+    background-color: #ff0808d3;
+    color: #fff;
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: bold;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    transition: transform 0.3s ease, background-color 0.3s ease;
+    gap: 8px;
+    margin-top: 20px;
+}
+
+.hero-actionsmsg:hover {
+    background-color: #f85e04;
+    color: #fff;
+    transform: translateY(-3px);
+}
+
+.hero-actionsmsg ion-icon {
+    font-size: 20px;
+}
+
+@media (max-width: 600px) {
+    .hero-actionsmsg {
+        bottom: 15px;
+        right: 15px;
+        padding: 12px 16px;
+        font-size: 14px;
+    }
+}
+
+/* Botão principal com degradê e sombra. */
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary), var(--primary-strong));
+  color: white;
+  box-shadow: 0 10px 26px rgba(155, 4, 4, 0.32);
+}
+
+/* Botão secundário com fundo transparente. */
+
+.btn-secondary {
+  background: rgba(224, 7, 7, 0.226);
+  color: var(--text);
+  border: 1px solid var(--line);
+}
+
+
+/* ==========================================================
+   6. BANNER PRINCIPAL (HERO)
+   ========================================================== */
+
+/* Define o espaçamento vertical do banner. */
+
+.hero {
+  padding: 72px 0 50px;
+}
+
+
+/* Divide o banner em duas colunas:
+   uma para o texto e outra para a roleta. */
+
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1.08fr 0.92fr;
+  align-items: center;
+  gap: 36px;
+}
+
+
+/* Estilo dos pequenos textos de destaque. */
+
+.eyebrow {
+  display: inline-block;
+  margin-bottom: 18px;
+  padding: 0.45rem 0.8rem;
+  border-radius: 999px;
+  background: rgba(245, 91, 2, 0.39);
+  color: #fdad00;
+  font-size: 0.76rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+
+/* Variante do eyebrow utilizada em áreas com fundo claro
+   ou que precisam de um destaque mais discreto. */
+
+.eyebrow.dark {
+  background: rgba(255, 138, 4, 0.1);
+  color: #f1b260;
+}
+
+
+/* Título principal do banner.
+   clamp permite que o tamanho varie conforme a tela. */
+
+.hero-copy h1 {
+  font-size: clamp(2.4rem, 5vw, 4.4rem);
+  line-height: 1.05;
+  letter-spacing: -0.05em;
+  margin-bottom: 18px;
+}
+
+
+/* Texto descritivo do banner. */
+
+.hero-copy p {
+  color: var(--muted);
+  font-size: 1.08rem;
+  max-width: 620px;
+}
+
+
+/* Organiza os botões do banner. */
+
+.hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 30px;
+  flex-wrap: wrap;
+}
+
+
+/* ==========================================================
+   7. ESTATÍSTICAS DO BANNER
+   ========================================================== */
+
+/* Organiza os indicadores em uma linha. */
+
+.stats {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin-top: 30px;
+  flex-wrap: wrap;
+}
+
+
+/* Define largura mínima para cada indicador. */
+
+.stats div {
+  min-width: 120px;
+}
+
+
+/* Destaque dos números e informações principais. */
+
+.stats strong {
+  display: block;
+  font-size: 1.5rem;
+  color: var(--text);
+}
+
+
+/* Texto explicativo dos indicadores. */
+
+.stats span {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+
+/* ==========================================================
+   8. CARD DA ROLETA
+   ========================================================== */
+
+/* Painel que envolve a roleta e o botão de girar. */
+
+.wheel-card {
+  background: linear-gradient(
+    180deg,
+    rgba(27, 12, 12, 0.95),
+    rgba(95, 3, 3, 0.651)
+  );
+
+  border: 1px solid var(--line);
+  border-radius: 30px;
+  padding: 28px;
+  box-shadow: 0 30px 70px var(--shadow);
+}
+
+
+/* Container que centraliza a roleta e sua sombra. */
+
+.wheel-wrap {
+  position: relative;
+  display: grid;
+  place-items: center;
+  margin-bottom: 20px;
+}
+
+
+/* Efeito de sombra e iluminação atrás da roleta. */
+
+.wheel-shadow {
+  position: absolute;
+  width: 360px;
+  height: 360px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(110, 4, 4, 0.308),
+    transparent 60%
+  );
+  filter: blur(30px);
+}
+
+
+/* ==========================================================
+   9. ROLETA
+   ========================================================== */
+
+/* Cria a roleta circular com seis segmentos coloridos.
+   conic-gradient distribui as cores em ângulos ao redor do círculo.
+   transition permite que o JavaScript anime a rotação. */
+
+.wheel {
+  position: relative;
+  width: 320px;
+  height: 320px;
+  border-radius: 50%;
+  overflow: hidden;
+
+  background: conic-gradient(
+    #b65200 0deg 60deg,
+    #990000 60deg 120deg,
+    #e74d06 120deg 180deg,
+    #000000 180deg 240deg,
+    #ff4901 240deg 300deg,
+    #7e0a0a 300deg 360deg
+  );
+
+  border: 12px solid rgba(255, 0, 0, 0.08);
+  box-shadow: inset 0 0 40px rgba(155, 3, 3, 0.08);
+
+  /* Rotação inicial da roleta. */
+  transform: rotate(0deg);
+
+  /* Animação utilizada quando a roleta gira. */
+  transition: transform 3s cubic-bezier(0.14, 0.95, 0.25, 1);
+}
+
+
+/* Cria uma camada interna decorativa na roleta. */
+
+.wheel::before {
+  content: "";
+  position: absolute;
+  inset: 18px;
+  background: rgba(0, 0, 0, 0.12);
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+
+/* ==========================================================
+   10. CENTRO DA ROLETA
+   ========================================================== */
+
+/* Posiciona o botão central GO exatamente no centro do círculo. */
+
+.wheel-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+
+  background: linear-gradient(135deg, #1f1f23, #121214);
+  border: 3px solid rgba(255, 255, 255, 0.12);
+
+  display: grid;
+  place-items: center;
+
+  font-weight: 800;
+  z-index: 2;
+}
+
+
+/* ==========================================================
+   11. SEGMENTOS E PRÊMIOS DA ROLETA
+   ========================================================== */
+
+/* Estilo geral dos textos de cada segmento.
+   position absolute permite posicioná-los dentro da roleta. */
+
+.segment {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+
+  display: grid;
+  place-items: center;
+
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: white;
+
+  /* Sombra para melhorar a leitura dos prêmios. */
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+
+/* Posiciona cada prêmio em uma parte da roleta.
+   rotate define o ângulo e translateY desloca o texto. */
+
+.s1 {
+  transform: rotate(30deg) translateY(-128px);
+}
+
+.s2 {
+  transform: rotate(90deg) translateY(-128px);
+}
+
+.s3 {
+  transform: rotate(150deg) translateY(-128px);
+}
+
+.s4 {
+  transform: rotate(210deg) translateY(-128px);
+}
+
+.s5 {
+  transform: rotate(270deg) translateY(-128px);
+}
+
+.s6 {
+  transform: rotate(330deg) translateY(-128px);
+}
+
+
+/* ==========================================================
+   12. BOTÃO GIRAR ROLETA
+   ========================================================== */
+
+/* Botão principal da roleta. */
+
+.spin-btn {
+  width: 100%;
+  padding: 1rem 1.4rem;
+
+  border: none;
+  border-radius: 16px;
+
+  background: linear-gradient(
+    135deg,
+    #d45104c9,
+    #ff8902ab
+  );
+
+  color: #141414;
+  font-weight: 800;
+  cursor: pointer;
+  font-size: 1rem;
+
+  /* Animação suave ao interagir. */
+  transition: transform 0.2s ease;
+}
+
+
+/* Efeito de elevação no botão da roleta. */
+
+.spin-btn:hover {
+  transform: translateY(-1px);
+}
+
+
+/* ==========================================================
+   13. SEÇÕES GERAIS
+   ========================================================== */
+
+/* Espaçamento padrão das seções do site. */
+
+.section {
+  padding: 88px 0;
+}
+
+
+/* Variante de seção com fundo ligeiramente diferente.
+   Utilizada para separar visualmente os conteúdos. */
+
+.section.alt {
+  background: rgba(255, 255, 255, 0.015);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+
+/* ==========================================================
+   14. TÍTULOS DAS SEÇÕES
+   ========================================================== */
+
+/* Espaçamento abaixo do cabeçalho de cada seção. */
+
+.section-header {
+  margin-bottom: 36px;
+}
+
+
+/* Título das seções.
+   clamp ajusta o tamanho entre telas pequenas e grandes. */
+
+.section-header h2 {
+  font-size: clamp(2rem, 3vw, 2.9rem);
+  max-width: 780px;
+  letter-spacing: -0.04em;
+}
+
+
+/* ==========================================================
+   15. SEÇÃO COMO FUNCIONA
+   ========================================================== */
+
+/* Organiza os três cards de etapas em colunas iguais. */
+
+.steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 22px;
+}
+
+
+/* ==========================================================
+   16. ESTILO GERAL DOS CARDS E PAINÉIS
+   ========================================================== */
+
+/* Estilo compartilhado entre cards, formulário e chamada final.
+   Evita repetir as mesmas propriedades em vários lugares. */
+
+.step-card,
+.benefit-card,
+.form-box,
+.cta-box {
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid var(--line);
+  border-radius: 22px;
+}
+
+
+/* Espaçamento interno dos cards de etapas. */
+
+.step-card {
+  padding: 26px;
+}
+
+
+/* Número de cada etapa do funcionamento. */
+
+.step-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+
+  background: rgba(226, 5, 5, 0.301);
+  color: #e9862a;
+
+  font-weight: 800;
+  margin-bottom: 18px;
+}
+
+
+/* Títulos dos cards de etapas e benefícios. */
+
+.step-card h3,
+.benefit-card h3 {
+  margin-bottom: 10px;
+  font-size: 1.3rem;
+}
+
+
+/* Textos descritivos dos cards e do formulário. */
+
+.step-card p,
+.benefit-card p,
+.form-copy p {
+  color: var(--muted);
+}
+
+
+/* ==========================================================
+   17. SEÇÃO DE BENEFÍCIOS
+   ========================================================== */
+
+/* Organiza os cards de benefícios em três colunas. */
+
+.benefits-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 22px;
+}
+
+
+/* Espaçamento interno dos cards de benefícios. */
+
+.benefit-card {
+  padding: 30px 24px;
+}
+
+
+/* Estilo dos emojis ou ícones dos benefícios. */
+
+.benefit-card span {
+  display: inline-flex;
+
+  width: 56px;
+  height: 56px;
+
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 14px;
+  background: rgba(216, 165, 106, 0.12);
+
+  font-size: 1.8rem;
+  margin-bottom: 16px;
+}
+
+
+/* ==========================================================
+   18. CHAMADA PARA FIDELIZAÇÃO (CTA)
+   ========================================================== */
+
+/* Organiza o texto e o botão lado a lado. */
+
+.cta-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 16px;
+  padding: 28px 30px;
+}
+
+
+/* Título da chamada final. */
+
+.cta-box h2 {
+  font-size: clamp(1.8rem, 3vw, 2.7rem);
+  letter-spacing: -0.04em;
+}
+
+/* ==========================================================
+   19. SEÇÃO DE CADASTRO
+   ========================================================== */
+
+.form-section {
+  padding-top: 20px;
+}
+
+.form-box {
+  display: grid;
+  grid-template-columns: 0.9fr 1.1fr;
+  gap: 26px;
+  padding: 28px;
+}
+
+.form-copy h2 {
+  font-size: clamp(2rem, 3vw, 2.7rem);
+  letter-spacing: -0.04em;
+  margin-bottom: 12px;
+}
+
+
+/* Cadastro/entrar. */
+
+#CadastroSite{
+    display: none;
+    flex-direction: column;
+    gap: 14px;
+    width: 100%;
+    margin-top: 20px;
+}
+
+/* Formulário de Login */
+#EntrarPainel{
+    display: grid;
+    gap: 14px;
+    width: 100%;
+    margin-top: 20px;
+}
+/* ==========================================
+   CAIXINHA LOGIN / CADASTRO
+========================================== */
+
+.formulario {
+    position: relative;
+    width: 100%;
+    max-width: 420px;
+    min-height: 400px;
+    margin: auto;
+    padding: 25px;
+    box-sizing: border-box;
+    background: rgba(20, 10, 10, 0.95);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    box-shadow: 0 0 20px rgba(255, 0, 0, 0.35);
+    overflow: hidden;
+}
+
+/* ==========================================
+   BOTÕES ENTRAR / CADASTRO
+========================================== */
+
+.btn-form {
+    display: flex;
+    justify-content: center;
+    position: relative;
+    margin-bottom: 25px;
+}
+
+.btn-form span {
+    display: block;
+    width: 50%;
+    padding: 10px;
+    text-align: center;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    box-sizing: border-box;
+}
+
+/* ==========================================
+   LINHA INDICADORA
+========================================== */
+
+#Indicador {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 50%;
+    height: 3px;
+    border: none;
+    margin: 0;
+    background-color: #ff0202;
+    transform: translateX(0);
+    transition: transform 0.4s ease;
+}
+
+/* ==========================================
+   CAMPOS DOS FORMULÁRIOS
+========================================== */
+
+.formulario input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 14px;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    background: #161010;
+    color: white;
+    font-size: 1rem;
+}
+
+.formulario input::placeholder {
+    color: #aaa;
+}
+
+.formulario input:focus {
+    outline: none;
+    border-color: #ff0202;
+}
+
+/* ==========================================
+   BOTÕES DE ENVIO
+========================================== */
+
+.formulario button {
+    width: 100%;
+    margin-top: 10px;
+}
+
+.lead-form2 a {
+    text-align: center;
+    color: #aaa;
+    text-decoration: none;
+}
+
+.lead-form2 a:hover {
+    color: #ff0202;
+}
+
+.account-message {
+    min-height: 1.4em;
+    margin: 14px 0 0;
+    color: #d7d0cf;
+    text-align: center;
+    overflow-wrap: anywhere;
+}
+
+.account-message.error {
+    color: #ff8b8b;
+}
+
+[hidden] {
+    display: none !important;
+}
+
+/* ==========================================================
+   20. RODAPÉ
+   ========================================================== */
+
+/* Espaçamento e borda superior do rodapé. */
+
+.footer {
+  padding: 28px 0 36px;
+  border-top: 1px solid var(--line);
+}
+
+
+/* Organiza as informações do rodapé.
+   flex-wrap permite quebrar linha em telas menores. */
+
+.footer-inner {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+
+  color: var(--muted);
+  font-size: 0.95rem;
+
+  flex-wrap: wrap;
+}
+
+
+/* ==========================================================
+   21. RESPONSIVIDADE - TABLETS
+   ========================================================== */
+
+/* Aplica estas regras quando a tela possuir até 900px.
+   É o breakpoint utilizado para tablets e telas menores. */
+
+@media (max-width: 900px) {
+
+  /* Transforma as estruturas principais em uma única coluna. */
+  .hero-grid,
+  .form-box,
+  .steps,
+  .benefits-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Coloca a chamada final em formato vertical. */
+  .cta-box {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  /* Esconde o menu de navegação em telas menores. */
+  .menu {
+    display: none;
+  }
+}
+
+
+/* ==========================================================
+   22. RESPONSIVIDADE - CELULARES
+   ========================================================== */
+
+/* Aplica estas regras quando a tela possuir até 560px.
+   Ajusta tamanhos e espaçamentos para celulares. */
+
+@media (max-width: 560px) {
+
+  /* Reduz o espaçamento superior do banner. */
+  .hero {
+    padding-top: 56px;
+  }
+
+  .hero-grid > * {
+    min-width: 0;
+  }
+
+  .wheel-shadow {
+    width: min(260px, calc(100vw - 56px));
+    height: min(260px, calc(100vw - 56px));
+  }
+
+  @media (max-width: 390px) {
+      .brand span {
+          max-width: 118px;
+          line-height: 1.15;
+      }
+
+      .nav .btn-primary1 {
+          margin-left: auto;
+      }
+  }
+
+  /* Reduz a altura do cabeçalho. */
+  .nav {
+    min-height: 68px;
+  }
+
+  /* Faz os botões ocuparem toda a largura disponível. */
+  .hero-actions .btn,
+  .cta-box .btn {
+    width: 100%;
+  }
+
+  /* Coloca os botões do banner um abaixo do outro. */
+  .hero-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  /* Reduz o tamanho da roleta para caber no celular. */
+  .wheel {
+    width: 260px;
+    height: 260px;
+  }
+
+  /* Reposiciona os prêmios para acompanhar
+     o tamanho reduzido da roleta. */
+
+  .s1 {
+    transform: rotate(30deg) translateY(-102px);
+  }
+
+  .s2 {
+    transform: rotate(90deg) translateY(-102px);
+  }
+
+  .s3 {
+    transform: rotate(150deg) translateY(-102px);
+  }
+
+  .s4 {
+    transform: rotate(210deg) translateY(-102px);
+  }
+
+  .s5 {
+    transform: rotate(270deg) translateY(-102px);
+  }
+
+  .s6 {
+    transform: rotate(330deg) translateY(-102px);
+  }
+
+}

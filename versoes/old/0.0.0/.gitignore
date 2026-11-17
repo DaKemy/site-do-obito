@@ -1,0 +1,6 @@
+mvp-tattoo/__pycache__/
+mvp-tattoo/data.sqlite*
+mvp-tattoo/uploads/
+__pycache__/
+*.py[cod]
+node_modules/
