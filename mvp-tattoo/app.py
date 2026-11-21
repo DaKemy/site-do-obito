@@ -37,6 +37,7 @@ BASE_DIR = Path(__file__).resolve().parent
 WEB_ROOT = BASE_DIR.parent
 load_dotenv(WEB_ROOT / '.env')
 DATABASE_URL = os.environ.get('DATABASE_URL')
+REQUIRE_EMAIL_VERIFICATION = os.environ.get('REQUIRE_EMAIL_VERIFICATION', '0') == '1'
 STATIC_DIR = BASE_DIR / 'public'
 UPLOAD_FOLDER = BASE_DIR / 'uploads'
 UPLOAD_FOLDER.mkdir(exist_ok=True)
@@ -530,51 +531,77 @@ def auth_register():
     if len(password) < 8:
         return jsonify({'error': 'A senha deve ter pelo menos 8 caracteres.'}), 400
 
-    verification_token = secrets.token_urlsafe(32)
-    expires_at = datetime.now(timezone.utc) + timedelta(hours=1)
+    verification_token = (
+        secrets.token_urlsafe(32) if REQUIRE_EMAIL_VERIFICATION else None
+    )
+    verification_expires_at = (
+        datetime.now(timezone.utc) + timedelta(hours=1)
+        if verification_token else None
+    )
     conn = get_db()
     try:
         cursor = conn.execute(
             """INSERT INTO customers
-               (whatsapp, name, email, cpf_hash, password_hash,
+               (whatsapp, name, email, cpf_hash, password_hash, email_verified,
                 verification_token_hash, verification_expires_at)
-               VALUES (%s, %s, %s, %s, %s, %s, %s) RETURNING id""",
+               VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING id""",
             (
                 whatsapp,
                 name,
                 email,
                 cpf_digest(cpf),
                 generate_password_hash(password),
-                token_digest(verification_token),
-                expires_at,
+                int(not REQUIRE_EMAIL_VERIFICATION),
+                token_digest(verification_token) if verification_token else None,
+                verification_expires_at,
             ),
         )
         customer_id = cursor.fetchone()['id']
+        if not REQUIRE_EMAIL_VERIFICATION:
+            conn.execute(
+                'INSERT INTO loyalty_progress (customer_id) VALUES (%s) '
+                'ON CONFLICT (customer_id) DO NOTHING',
+                (customer_id,),
+            )
+            conn.execute(
+                """INSERT INTO customer_spins
+                   (customer_id, source, status, expires_at)
+                   VALUES (%s, 'signup', 'pending', %s)""",
+                (customer_id, datetime.now(timezone.utc) + timedelta(days=30)),
+            )
         conn.commit()
     except psycopg2.IntegrityError:
         conn.close()
         return jsonify({'error': 'CPF, e-mail ou telefone já cadastrado.'}), 409
     conn.close()
 
-    base_url = os.environ.get('PUBLIC_BASE_URL', request.host_url).rstrip('/')
-    verification_url = f'{base_url}/?verificar={verification_token}'
-    try:
-        send_account_email(
-            email,
-            'Confirme seu e-mail - Roleta da Fidelidade',
-            f'Olá, {name}!\n\nConfirme seu e-mail neste link (válido por 1 hora):\n{verification_url}',
-        )
-    except (OSError, RuntimeError, smtplib.SMTPException, ValueError) as error:
-        app.logger.error('Falha ao enviar confirmação de e-mail: %s', error)
+    if REQUIRE_EMAIL_VERIFICATION:
+        base_url = os.environ.get('PUBLIC_BASE_URL', request.host_url).rstrip('/')
+        verification_url = f'{base_url}/?verificar={verification_token}'
+        try:
+            send_account_email(
+                email,
+                'Confirme seu e-mail - Roleta da Fidelidade',
+                f'Olá, {name}!\n\nConfirme seu e-mail neste link (válido por 1 hora):\n{verification_url}',
+            )
+        except (OSError, RuntimeError, smtplib.SMTPException, ValueError) as error:
+            app.logger.error('Falha ao enviar confirmação de e-mail: %s', error)
+            return jsonify({
+                'error': 'Não foi possível enviar o e-mail de confirmação. Configure o serviço de e-mail e tente novamente.'
+            }), 503
         return jsonify({
-            'error': 'Não foi possível enviar o e-mail de confirmação. Configure o serviço de e-mail e tente novamente.'
-        }), 503
+            'ok': True,
+            'message': 'Enviamos um link de confirmação para seu e-mail. Ele expira em 1 hora.',
+            'customerId': customer_id,
+        }), 202
 
+    session.clear()
+    session['customer_id'] = customer_id
     return jsonify({
         'ok': True,
-        'message': 'Enviamos um link de confirmação para seu e-mail. Ele expira em 1 hora.',
+        'message': 'Cadastro realizado. Sua conta está ativa e seu primeiro giro está disponível.',
         'customerId': customer_id,
-    }), 202
+    }), 201
 
 
 @app.route('/api/auth/resend-verification', methods=['POST'])
@@ -792,7 +819,7 @@ def reset_password():
 # ── Perfil e roleta do cliente autenticado. ──
 @app.route('/api/customers/register', methods=['POST'])
 def register_customer():
-    return jsonify({'error': 'Use o cadastro com CPF e confirmação de e-mail.'}), 410
+    return jsonify({'error': 'Use o cadastro atual com CPF e senha.'}), 410
 
 
 @app.route('/api/customers/<int:customer_id>', methods=['GET'])
@@ -1244,7 +1271,7 @@ def web_file(filename):
         return send_from_directory(str(WEB_ROOT), filename)
     if filename not in {
         'styles.css', 'login.js', 'script.js', 'admin.js', 'njnaruto.ttf',
-        'esqueci-senha.html', 'guia.html',
+        'admin.html', 'esqueci-senha.html', 'roleta.html', 'roleta.js',
     }:
         abort(404)
     return send_from_directory(str(WEB_ROOT), filename)

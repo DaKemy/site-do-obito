@@ -32,6 +32,11 @@ class AccountFlowTests(unittest.TestCase):
 
     def setUp(self):
         """Cria banco isolado para impedir que os testes alterem dados reais."""
+        self.email_verification_setting = patch.object(
+            app_module, 'REQUIRE_EMAIL_VERIFICATION', True
+        )
+        self.email_verification_setting.start()
+        self.addCleanup(self.email_verification_setting.stop)
         if not app_module.DATABASE_URL:
             self.fail('Set DATABASE_URL in the project .env before running database tests.')
         self.schema = f'test_auth_{uuid.uuid4().hex}'

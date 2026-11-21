@@ -2,7 +2,7 @@
 <!--
     Página pública principal da versão 0.0.2.
     Os textos e formulários ficam no HTML; styles.css controla a aparência,
-    login.js cuida das contas, script.js da roleta e admin.js do painel dev.
+    login.js cuida das contas e script.js da roleta; o painel separado usa admin.html e admin.js.
 -->
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -66,11 +66,11 @@
                 <a href="#como-funciona">Como funciona</a>
                 <a href="#beneficios">Benefícios</a>
                 <a href="#fidelizar">Fidelizar</a>
-                <a href="guia.html">Guia do projeto</a>
+                <a href="roleta.html">Roleta</a>
             </nav>
 
                 <a class="btn btn-primary1" href="#cadastro">Quero participar</a>
-                <a href="#administracao" id="adminOpenLink" class="admin-access"
+                <a href="/admin.html" class="admin-access"
                    aria-label="Acesso do desenvolvedor" title="Acesso do desenvolvedor">
                     <svg aria-hidden="true" viewBox="0 0 48 48" focusable="false">
                         <path d="M24 7v34M18 41h12M24 18h16M35 14v8M24 18 12 28M8 25v7M12 28l4 4" />
@@ -80,17 +80,6 @@
         </div>
     </header>
 
-    <!--  Instagram -->
-    <a class="hero-actionsmsg2" href="https://www.instagram.com/blktattoo.ink?cplk=MTA2anFxa3lzdWg3Yg==" target="_blank" rel="noopener noreferrer">
-        <ion-icon name="logo-instagram"></ion-icon>Instagram
-    </a>
-
-    <!--  WhatsApp. -->
-    <a class="hero-actionsmsg" href="https://wa.me/5541999224974?text=Olá!%20Gostaria%20de%20mais%20informações."
-       target="_blank" rel="noopener noreferrer">
-        <ion-icon name="logo-whatsapp"></ion-icon>WhatsApp
-    </a>
-
 <!-- ====================  main ==================== -->
     <main>
         <section class="hero">
@@ -99,7 +88,7 @@
                     <span class="eyebrow">Versão principal · 0.0.2</span>
 
                     <h1>Cadastre-se e ganhe um giro na nossa roleta exclusiva.</h1>
-                    <p>Após confirmar o e-mail, o cliente recebe uma chance de ganhar desconto especial. E a cada 3 tatuagens realizadas, ganha mais 1 giro para continuar acumulando vantagens.</p>
+                    <p>Ao se cadastrar, o cliente recebe um giro para concorrer a descontos especiais. A cada 3 tatuagens realizadas, ganha mais 1 giro para continuar acumulando vantagens.</p>
 
                     <div class="hero-actions">
                         <a class="btn btn-primary" href="#cadastro">Participar agora</a>
@@ -115,7 +104,7 @@
 
                         <div>
                             <strong>1</strong>
-                            <span>Giro após confirmar e-mail</span>
+                            <span>Giro após o cadastro</span>
                         </div>
 
                         <div>
@@ -148,7 +137,7 @@
                     <article class="step-card">
                         <div class="step-number">01</div>
                         <h3>Cadastro</h3>
-                        <p>Após confirmar o e-mail, o cliente ganha automaticamente 1 giro na roleta.</p>
+                        <p>Ao concluir o cadastro, o cliente recebe automaticamente 1 giro na roleta.</p>
                     </article>
 
                     <!-- -------- Etapa 2 -------- -->
@@ -224,7 +213,7 @@
         <div class="form-copy">
             <span class="eyebrow dark">Cadastro</span>
             <h2>Ganhe seu primeiro giro</h2>
-            <p>Entre em contato e participe da nossa roleta de fidelidade.</p>
+            <p>Cadastre-se sem confirmação por e-mail. Sua conta será ativada na hora e o primeiro giro ficará disponível após o cadastro.</p>
         </div>
         
 <!-- Contêiner dos formulários -->
@@ -258,72 +247,19 @@
 
 </section>
 
-        <!-- Painel do desenvolvedor, oculto até a pessoa clicar na catraca. -->
-        <section id="administracao" class="section admin-section" hidden>
-            <div class="container">
-                <div class="section-header">
-                    <span class="eyebrow dark">Acesso restrito · desenvolvedor</span>
-                    <h2>Painel do desenvolvedor</h2>
-                    <p>Gerencie contas de clientes, redefina senhas e configure os prêmios da roleta.</p>
-                </div>
-
-                <!-- Credenciais de desenvolvedor; não é o login de cliente. -->
-                <div class="admin-card" id="adminLoginView">
-                    <h3>Acesso administrativo</h3>
-                    <form id="adminLoginForm" class="admin-form">
-                        <label>Usuário administrador
-                            <input name="username" autocomplete="username" required>
-                        </label>
-                        <label>Senha administrativa
-                            <input name="password" type="password" autocomplete="current-password" required>
-                        </label>
-                        <button class="btn btn-primary" type="submit">Entrar no painel</button>
-                    </form>
-                </div>
-
-                <p id="adminMessage" class="account-message" aria-live="polite"></p>
-                <div id="adminContent" hidden>
-                    <div class="admin-toolbar">
-                        <p id="adminWelcome"></p>
-                        <button class="btn btn-secondary" id="adminLogout" type="button">Sair do painel</button>
-                    </div>
-
-                    <!-- Abas que alternam a lista de usuários e as regras da roleta. -->
-                    <div class="admin-tabs" role="tablist" aria-label="Seções administrativas">
-                        <button class="btn btn-secondary active" type="button" data-admin-tab="customers">Usuários</button>
-                        <button class="btn btn-secondary" type="button" data-admin-tab="prizes">Configurar roleta</button>
-                    </div>
-
-                    <!-- Lista pesquisável e ações para administrar contas de clientes. -->
-                    <section class="admin-panel" id="adminCustomersPanel">
-                        <div class="admin-panel-heading">
-                            <h3>Usuários cadastrados</h3>
-                            <input id="adminCustomerSearch" type="search" placeholder="Buscar por nome, e-mail ou telefone">
-                        </div>
-                        <div id="adminCustomers" class="admin-customer-list"></div>
-                    </section>
-
-                    <!-- Configura nome, desconto, nível, chance e ativação dos prêmios. -->
-                    <section class="admin-panel" id="adminPrizesPanel" hidden>
-                        <h3>Prêmios e probabilidades da roleta</h3>
-                        <p>O peso define a chance relativa de cada prêmio; números maiores aumentam essa chance.</p>
-                        <form id="adminPrizesForm">
-                            <div id="adminPrizes" class="admin-prize-list"></div>
-                            <button class="btn btn-primary" type="submit">Salvar prêmios</button>
-                        </form>
-                    </section>
-
-                    <aside class="admin-notice">
-                        <strong>Segurança:</strong> senhas atuais nunca são exibidas. Senhas administrativas,
-                        conexão do banco e SMTP continuam protegidos nas variáveis do Render.
-                    </aside>
-                </div>
-            </div>
-        </section>
     </main>
 
     <!-- ==================== RODAPÉ ==================== -->
     <footer class="footer">
+        <div class="container footer-contact" role="group" aria-label="Links de contato">
+            <a class="hero-actionsmsg2" href="https://www.instagram.com/blktattoo.ink?cplk=MTA2anFxa3lzdWg3Yg==" target="_blank" rel="noopener noreferrer">
+                <ion-icon name="logo-instagram"></ion-icon>Instagram
+            </a>
+            <a class="hero-actionsmsg" href="https://wa.me/5541999224974?text=Olá!%20Gostaria%20de%20mais%20informações."
+               target="_blank" rel="noopener noreferrer">
+                <ion-icon name="logo-whatsapp"></ion-icon>WhatsApp
+            </a>
+        </div>
         <div class="container footer-inner">
             <span>© 2026 Roleta da Fidelidade</span>
             <span style="display: inline-block; transform: translateX(-80px);">
@@ -336,7 +272,6 @@
 
     <script src="login.js" defer></script>
     <script src="script.js" defer></script>
-    <script src="admin.js" defer></script>
     <script>
     const campoCPF = document.getElementById('cpf');
     campoCPF.addEventListener('input', function () {

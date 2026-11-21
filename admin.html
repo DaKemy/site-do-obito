@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="description" content="Área administrativa protegida da Roleta da Fidelidade.">
+    <title>Painel do desenvolvedor | Roleta da Fidelidade</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header class="topbar">
+        <div class="container nav">
+            <a class="brand" href="/">
+                <img src="assets/img/logo.png" alt="" width="60" height="60">
+                <span>Roleta da Fidelidade</span>
+            </a>
+            <nav class="admin-menu" aria-label="Navegação administrativa">
+                <a href="/">Voltar ao site</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section id="administracao" class="section admin-section">
+            <div class="container">
+                <div class="section-header">
+                    <span class="eyebrow dark">Acesso restrito · desenvolvedor</span>
+                    <h1>Painel do desenvolvedor</h1>
+                    <p>Gerencie contas de clientes, redefina senhas e configure os prêmios da roleta.</p>
+                </div>
+
+                <div class="admin-card" id="adminLoginView">
+                    <h2>Acesso administrativo</h2>
+                    <form id="adminLoginForm" class="admin-form">
+                        <label>Usuário administrador
+                            <input name="username" autocomplete="username" required>
+                        </label>
+                        <label>Senha administrativa
+                            <input name="password" type="password" autocomplete="current-password" required>
+                        </label>
+                        <button class="btn btn-primary" type="submit">Entrar no painel</button>
+                    </form>
+                </div>
+
+                <p id="adminMessage" class="account-message" aria-live="polite"></p>
+                <div id="adminContent" hidden>
+                    <div class="admin-toolbar">
+                        <p id="adminWelcome"></p>
+                        <button class="btn btn-secondary" id="adminLogout" type="button">Sair do painel</button>
+                    </div>
+
+                    <div class="admin-tabs" role="tablist" aria-label="Seções administrativas">
+                        <button class="btn btn-secondary active" type="button" data-admin-tab="customers">Usuários</button>
+                        <button class="btn btn-secondary" type="button" data-admin-tab="prizes">Configurar roleta</button>
+                    </div>
+
+                    <section class="admin-panel" id="adminCustomersPanel">
+                        <div class="admin-panel-heading">
+                            <h2>Usuários cadastrados</h2>
+                            <input id="adminCustomerSearch" type="search" placeholder="Buscar por nome, e-mail ou telefone">
+                        </div>
+                        <div id="adminCustomers" class="admin-customer-list"></div>
+                    </section>
+
+                    <section class="admin-panel" id="adminPrizesPanel" hidden>
+                        <h2>Prêmios e probabilidades da roleta</h2>
+                        <p>O peso define a chance relativa de cada prêmio; números maiores aumentam essa chance.</p>
+                        <form id="adminPrizesForm">
+                            <div id="adminPrizes" class="admin-prize-list"></div>
+                            <button class="btn btn-primary" type="submit">Salvar prêmios</button>
+                        </form>
+                    </section>
+
+                    <aside class="admin-notice">
+                        <strong>Segurança:</strong> senhas atuais nunca são exibidas. As operações administrativas
+                        continuam protegidas pela sessão validada no servidor.
+                    </aside>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container footer-inner">
+            <span>Área administrativa</span>
+            <a href="/">Voltar ao site</a>
+        </div>
+    </footer>
+
+    <script src="admin.js" defer></script>
+</body>
+</html>

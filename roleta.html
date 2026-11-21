@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Acesse seus giros e participe da roleta de fidelidade.">
+    <title>Roleta | Roleta da Fidelidade</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header class="topbar">
+        <div class="container nav">
+            <a class="brand" href="/">
+                <img src="assets/img/logo.png" alt="" width="125">
+                <span>Roleta da Fidelidade</span>
+            </a>
+            <nav class="menu" aria-label="Navegação principal">
+                <a href="/">Início</a>
+                <a href="/#como-funciona">Como funciona</a>
+                <a href="/#cadastro">Minha conta</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="section roulette-page">
+            <div class="container">
+                <div class="section-header">
+                    <span class="eyebrow dark">Roleta de fidelidade</span>
+                    <h1>Seu próximo desconto</h1>
+                    <p>Entre na sua conta para conferir seus giros disponíveis.</p>
+                </div>
+
+                <div class="wheel-card roulette-card">
+                    <p id="rouletteStatus" class="roulette-status" role="status" aria-live="polite">
+                        Verificando sua conta...
+                    </p>
+                    <p id="spinCount" class="spin-count" aria-live="polite"></p>
+
+                    <div class="wheel-wrap">
+                        <div class="wheel-shadow" aria-hidden="true"></div>
+                        <div class="wheel" role="img" aria-label="Roleta de prêmios">
+                            <span class="segment s1" aria-hidden="true"></span>
+                            <span class="segment s2" aria-hidden="true"></span>
+                            <span class="segment s3" aria-hidden="true"></span>
+                            <span class="segment s4" aria-hidden="true"></span>
+                            <span class="segment s5" aria-hidden="true"></span>
+                            <span class="segment s6" aria-hidden="true"></span>
+                        </div>
+                        <span class="wheel-pointer" aria-hidden="true"></span>
+                        <div class="wheel-center" aria-hidden="true"><span>GIRE</span></div>
+                    </div>
+
+                    <button id="spinButton" class="spin-btn" type="button" disabled>
+                        Girar roleta
+                    </button>
+                    <p id="spinMessage" class="account-message" role="status" aria-live="polite"></p>
+                    <a id="loginRequired" class="btn btn-primary roulette-login" href="/#cadastro" hidden>
+                        Entrar ou criar conta
+                    </a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container footer-inner">
+            <span>Roleta da Fidelidade</span>
+            <a href="/">Voltar ao início</a>
+        </div>
+    </footer>
+
+    <script src="script.js" defer></script>
+    <script src="roleta.js" defer></script>
+</body>
+</html>

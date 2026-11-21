@@ -1,6 +1,6 @@
 # Instrucoes do Copilot para o Site do Obito
 
-- Antes de editar, confirme que o workspace e o clone `site-do-obito`. A versao principal do site esta na raiz; `old/` e historico.
+- Antes de editar, confirme que o workspace e o clone `site-do-obito`. A versao principal do site esta na raiz; nao recrie copias historicas em `old/` ou `versoes/`.
 - Leia o README da raiz para executar o projeto e escolher os testes apropriados.
 - O VS Code pode estar aberto no clone local ou numa sessao remota de Live Share. Nunca diga que executou comandos no computador local se o terminal disponivel for remoto ou estiver indisponivel; explique a limitacao e forneca comandos para a pessoa executar localmente.
 - A colaboracao usa GitHub Desktop para sincronizar. Nao execute `git push`, `git pull`, `git reset`, `git checkout` nem publique commits sem pedido explicito. Nao descarte alteracoes locais; deixe commit, push e pull para a pessoa no GitHub Desktop.

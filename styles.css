@@ -426,13 +426,18 @@ img {
 
 @media (max-width: 600px) {
 
-    /* BOTÃO WHATSAPP */
-    .hero-actionsmsg {
-        bottom: 15px;
-        right: 15px;
-        padding: 12px 16px;
-        font-size: 14px;
-        z-index: 9999;
+    .footer-contact {
+        justify-content: center;
+        margin-bottom: 16px;
+    }
+
+    .hero-actionsmsg,
+    .hero-actionsmsg2 {
+        position: static;
+        width: auto;
+        margin: 0;
+        padding: 10px 14px;
+        font-size: 13px;
     }
 
     /* BOTÃO PRINCIPAL */
@@ -508,11 +513,10 @@ img {
         padding: 0.65rem 0.75rem;
     }
 
-    .hero-actionsmsg {
-        bottom: 12px;
-        right: 10px;
-        padding: 10px 13px;
-        font-size: 12px;
+    .hero-actionsmsg,
+    .hero-actionsmsg2 {
+        padding: 9px 11px;
+        font-size: 11px;
     }
 
 }
@@ -660,6 +664,46 @@ img {
   display: grid;
   place-items: center;
   margin-bottom: 20px;
+}
+
+.roulette-page {
+  min-height: calc(100vh - 160px);
+}
+
+.roulette-card {
+  max-width: 680px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.roulette-status,
+.spin-count {
+  margin-bottom: 12px;
+  color: var(--text);
+}
+
+.wheel-pointer {
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  z-index: 3;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 14px solid transparent;
+  border-right: 14px solid transparent;
+  border-top: 26px solid #ff8902;
+  filter: drop-shadow(0 2px 3px #000);
+}
+
+.roulette-login {
+  margin-top: 16px;
+}
+
+.spin-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+  transform: none;
 }
 
 /* Efeito de sombra e iluminação atrás da roleta. */
@@ -1142,6 +1186,18 @@ img {
 .admin-section {
   border-top: 1px solid var(--line);
   background: rgba(15, 8, 8, 0.82);
+}
+
+.admin-menu {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+.admin-menu a {
+  color: var(--text);
+  font-size: 0.9rem;
 }
 
 .admin-card,

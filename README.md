@@ -1,19 +1,15 @@
 # Site do Obito
 
-Site de fidelidade para clientes de tatuagem. A pessoa cria uma conta, confirma
-o e-mail, recebe um giro na roleta e pode receber novos giros conforme progride
-no programa de fidelidade. O projeto também tem um painel separado para a
-equipe de desenvolvimento administrar contas e prêmios.
+Site de fidelidade para clientes de tatuagem. A pessoa cria uma conta, recebe
+um giro na roleta e pode receber novos giros conforme progride no programa de
+fidelidade. O projeto também tem um painel separado para a equipe de
+desenvolvimento administrar contas e prêmios.
 
 ## Qual pasta é a versão atual?
 
 **A versão principal está na raiz do repositório.** Comece por `index.html`,
-`guia.html` e `mvp-tattoo/app.py`. `old/` guarda o código legado. A antiga
-cópia de compatibilidade em `versoes/0.0.2/` não deve receber novas alterações.
-
-Para entender a estrutura e acompanhar os fluxos, abra o
-[guia interativo](./guia.html). As instruções de instalação, configuração,
-testes e operação estão neste README.
+`roleta.html` e `mvp-tattoo/app.py`. As cópias históricas foram removidas para
+evitar confusão; novas alterações devem ficar na raiz ou em `mvp-tattoo/`.
 
 ## Colaboração no VS Code
 
@@ -27,16 +23,18 @@ orientações do projeto em `.github/copilot-instructions.md`; o prompt
 
 | Parte | Responsabilidade |
 | --- | --- |
-| `index.html` | Conteúdo da página inicial, roleta, cadastro/login e painel do desenvolvedor. |
+| `index.html` | Página inicial, cadastro/login e acesso ao painel do desenvolvedor. |
+| `admin.html` | Login e painel administrativo em uma página separada. |
+| `roleta.html` | Roleta de fidelidade para clientes autenticados. |
 | `esqueci-senha.html` | Telas para pedir a recuperação e salvar uma senha nova. |
 | `styles.css` | Cores, tipografia, layout e adaptação para celular. |
-| `login.js` | Cadastro, login do cliente, confirmação e recuperação de conta. |
-| `script.js` | Atualização visual da roleta e animação de um resultado escolhido no servidor. |
+| `login.js` | Cadastro, login do cliente, confirmação opcional e recuperação de conta. |
+| `script.js` | Atualização visual e animação de um resultado escolhido pelo servidor. |
+| `roleta.js` | Verificação da sessão e dos giros disponíveis na página da roleta. |
 | `admin.js` | Interface do painel exclusivo de desenvolvedor. |
 | `mvp-tattoo/app.py` | Backend Flask: API, validações, sessões, regras de fidelidade e banco PostgreSQL. |
 | `mvp-tattoo/manage_admin.py` | Criação de conta administrativa ou redefinição de senha pelo terminal. |
-| `mvp-tattoo/test_*.py` | Testes de autenticação e testes simulados de e-mail. |
-| `guia.html` | Mapa pesquisável dos arquivos e tutoriais dos principais fluxos. |
+| `mvp-tattoo/test_*.py` | Testes de cadastro, autenticação e envio simulado de e-mail. |
 
 O caminho típico de uma ação é:
 
@@ -46,8 +44,10 @@ HTML (tela) → JavaScript (pedido HTTP) → Flask (validação e regras) → Po
 
 ## Perfis de acesso
 
-- **Cliente:** usa cadastro/login, precisa confirmar o e-mail e pode consultar
-  sua conta, seus giros e seu progresso.
+- **Cliente:** pode se cadastrar sem confirmação por e-mail enquanto
+  `REQUIRE_EMAIL_VERIFICATION=0` e consultar sua conta, giros e progresso.
+  Depois de configurar o serviço de e-mail, a confirmação pode ser reativada
+  definindo essa variável como `1`.
 - **Desenvolvedor:** entra pela catraca na página inicial. Pode administrar
   clientes, redefinir senhas e alterar os prêmios. Esse acesso é separado do
   login de cliente.
@@ -66,8 +66,13 @@ HTML (tela) → JavaScript (pedido HTTP) → Flask (validação e regras) → Po
    py app.py
    ```
 
-4. Abra `http://127.0.0.1:5000`. O guia fica em
-   `http://127.0.0.1:5000/guia.html`.
+4. Abra `http://127.0.0.1:5000`. A roleta fica em
+   `http://127.0.0.1:5000/roleta.html` e a administração em
+   `http://127.0.0.1:5000/admin.html`.
+
+Por padrão, o cadastro ativa a conta imediatamente e não envia e-mail. Para
+exigir confirmação, configure o envio de e-mail e defina
+`REQUIRE_EMAIL_VERIFICATION=1` no ambiente privado do servidor.
 
 ## Trabalhar em conjunto no GitHub
 
@@ -132,8 +137,7 @@ py -m unittest test_auth -v
 - GitHub Pages serve arquivos estáticos e não executa o backend Flask. Para
   login, banco e APIs, hospede o backend em um serviço compatível com Python.
 - Antes de publicar mudanças, confira se está editando os arquivos da raiz e
-  se nenhum arquivo privado foi incluído no envio. `old/legacy-local/` é uma
-  cópia local de segurança e fica excluída do Git.
+  se nenhum arquivo privado foi incluído no envio.
 
 ## Convenção dos comentários
 

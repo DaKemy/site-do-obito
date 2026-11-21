@@ -1,6 +1,7 @@
 **/__pycache__/
 **/*.py[cod]
 **/node_modules/
+.venv/
 **/uploads/
 **/data.sqlite*
 **/*.sqlite
@@ -10,4 +11,3 @@
 !.env.example
 .neon
 **/mcp.json
-old/legacy-local/

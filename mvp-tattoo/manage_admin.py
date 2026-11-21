@@ -10,13 +10,33 @@ import app as app_module
 
 def read_password():
     """Lê e confirma a senha sem exibi-la no terminal."""
-    password = getpass('Senha administrativa (mínimo 12 caracteres): ')
+    password = getpass('Senha administrativa (mínimo 8 caracteres): ')
     confirmation = getpass('Confirme a senha: ')
     if password != confirmation:
         raise ValueError('As senhas não coincidem.')
-    if not 12 <= len(password) <= 128:
-        raise ValueError('A senha deve ter entre 12 e 128 caracteres.')
+    if not 8 <= len(password) <= 128:
+        raise ValueError('A senha deve ter entre 8 e 128 caracteres.')
     return password
+
+
+def read_username():
+    """Lê e valida o nome da conta administrativa."""
+    username = input('Usuário administrativo: ').strip().lower()
+    if not username or len(username) > 80:
+        raise ValueError('O usuário deve conter entre 1 e 80 caracteres.')
+    return username
+
+
+def confirm_database_write(command, username):
+    """Exige confirmação antes de alterar o banco configurado no ambiente."""
+    action = 'criar' if command == 'create' else 'redefinir a senha de'
+    print(
+        f'Isso vai {action} a conta "{username}" no banco indicado por '
+        'DATABASE_URL.'
+    )
+    confirmation = input('Continuar? (s/N): ').strip().lower()
+    if confirmation not in {'s', 'sim'}:
+        raise SystemExit('Operação cancelada. O banco não foi alterado.')
 
 
 def create_admin(username, password):
@@ -55,19 +75,22 @@ def main():
     parser = argparse.ArgumentParser(
         description='Cria ou redefine uma conta do painel do desenvolvedor.'
     )
-    commands = parser.add_subparsers(dest='command', required=True)
+    commands = parser.add_subparsers(dest='command')
     create = commands.add_parser('create', help='Criar uma conta administrativa')
-    create.add_argument('username')
+    create.add_argument('username', nargs='?')
     reset = commands.add_parser('reset-password', help='Redefinir uma senha administrativa')
-    reset.add_argument('username')
+    reset.add_argument('username', nargs='?')
     args = parser.parse_args()
-    username = args.username.strip().lower()
+    command = args.command or 'create'
+    supplied_username = getattr(args, 'username', None)
+    username = supplied_username.strip().lower() if supplied_username else read_username()
     if not username or len(username) > 80:
-        parser.error('O usuário deve conter entre 1 e 80 caracteres.')
+        raise ValueError('O usuário deve conter entre 1 e 80 caracteres.')
 
     password = read_password()
+    confirm_database_write(command, username)
     app_module.init_db()
-    if args.command == 'create':
+    if command == 'create':
         create_admin(username, password)
         print(f'Conta administrativa "{username}" criada.')
     else:

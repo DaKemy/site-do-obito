@@ -1,5 +1,4 @@
 // Interface do painel exclusivo de desenvolvedor (separado da conta de cliente).
-const adminSection = document.getElementById('administracao');
 const adminLoginView = document.getElementById('adminLoginView');
 const adminLoginForm = document.getElementById('adminLoginForm');
 const adminContent = document.getElementById('adminContent');
@@ -221,18 +220,18 @@ function setAdminAuthenticated(user) {
     }
 }
 
-async function openAdminPanel() {
-    // Abre a área e consulta ao servidor se esta sessão já é de desenvolvedor.
-    adminSection.hidden = false;
+async function restoreAdminSession() {
+    // Restaura a sessão existente ao abrir a página administrativa.
     try {
         const result = await adminRequest('/api/admin/me');
         setAdminAuthenticated(result.user);
     } catch (error) {
         setAdminAuthenticated(null);
+        if (error.message !== 'Não autenticado.') {
+            showAdminMessage(error.message, true);
+        }
     }
 }
-
-document.getElementById('adminOpenLink').addEventListener('click', openAdminPanel);
 
 // Envia as credenciais de desenvolvedor; o servidor decide se são válidas.
 adminLoginForm.addEventListener('submit', async (event) => {
@@ -301,6 +300,4 @@ document.getElementById('adminPrizesForm').addEventListener('submit', async (eve
     }
 });
 
-window.addEventListener('hashchange', () => {
-    if (window.location.hash === '#administracao') adminSection.hidden = false;
-});
+restoreAdminSession();

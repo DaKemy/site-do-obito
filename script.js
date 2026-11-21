@@ -84,6 +84,7 @@ if (spinButton && wheel) {
             spinMessage.classList.add('error');
         } finally {
             spinButton.disabled = false;
+            window.dispatchEvent(new CustomEvent('spin-attempt-finished'));
         }
     });
 }
