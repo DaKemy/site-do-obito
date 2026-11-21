@@ -73,6 +73,18 @@ HTML (tela) → JavaScript (pedido HTTP) → Flask (validação e regras) → Po
    `http://127.0.0.1:5000/roleta.html` e a administração em
    `http://127.0.0.1:5000/admin.html`.
 
+## Abrir somente a roleta demonstrativa
+
+Com Python e Flask disponíveis, execute na raiz do projeto:
+
+```powershell
+py approleta.py
+```
+
+O navegador abrirá a roleta em `http://127.0.0.1:5051/roleta.html`. Esse
+servidor separado usa prêmios fictícios, não precisa de `.env` nem de banco de
+dados e não grava giros nem emite cupons. Encerre-o com `Ctrl+C` no terminal.
+
 Por padrão, o cadastro ativa a conta imediatamente e não envia e-mail. Para
 exigir confirmação, configure o envio de e-mail e defina
 `REQUIRE_EMAIL_VERIFICATION=1` no ambiente privado do servidor.
@@ -115,6 +127,13 @@ iniciar Flask** em `Terminal > Run Task` e configure `.env` localmente. Não
 compartilhe esse arquivo.
 
 ## Testes
+
+Para executar os testes que não usam o banco de produção:
+
+```powershell
+cd "mvp-tattoo"
+py -m unittest test_registration test_manage_admin test_email test_roulette_demo -v
+```
 
 Os testes de e-mail usam chamadas simuladas e não enviam mensagens reais:
 

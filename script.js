@@ -1,4 +1,4 @@
-// Controla os prêmios mostrados e a animação visual da roleta demonstrativa.
+// Controla os prêmios mostrados e a animação visual da roleta.
 const spinButton = document.getElementById('spinButton');
 const wheel = document.querySelector('.wheel');
 const spinMessage = document.getElementById('spinMessage');
@@ -57,7 +57,7 @@ if (wheel) {
 }
 
 async function requestSpin() {
-    // O backend sorteia o resultado demonstrativo; o navegador apenas anima.
+    // O backend sorteia o resultado; o navegador apenas anima.
     const response = await fetch('/api/spins/preview', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -81,7 +81,7 @@ if (spinButton && wheel) {
             const rotationDelta = 360 * 6 + ((targetAngle - currentAngle + 360) % 360);
             currentRotation += rotationDelta;
             wheel.style.transform = `rotate(${currentRotation}deg)`;
-            spinMessage.textContent = `${response.result.prizeName}: ${response.result.discountPercent}% de desconto (demonstração; sem cupom real).`;
+            spinMessage.textContent = `${response.result.prizeName}: ${response.result.discountPercent}% de desconto.`;
         } catch (error) {
             spinMessage.textContent = error.message;
             spinMessage.classList.add('error');
