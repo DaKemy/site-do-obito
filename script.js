@@ -1,4 +1,4 @@
-// Controla os prêmios mostrados e a animação visual da roleta principal.
+// Controla os prêmios mostrados e a animação visual da roleta demonstrativa.
 const spinButton = document.getElementById('spinButton');
 const wheel = document.querySelector('.wheel');
 const spinMessage = document.getElementById('spinMessage');
@@ -37,25 +37,28 @@ async function refreshWheelPrizes() {
         return `${wheelColors[index % wheelColors.length]} ${start}deg ${end}deg`;
     });
     wheel.style.background = `conic-gradient(${gradient.join(', ')})`;
+    if (spinButton) spinButton.disabled = false;
+    window.dispatchEvent(new Event('wheel-prizes-loaded'));
+}
+
+function showPrizeLoadError(error) {
+    if (spinButton) spinButton.disabled = true;
+    spinMessage.textContent = error.message;
+    spinMessage.classList.add('error');
+    window.dispatchEvent(new CustomEvent('wheel-prizes-error', { detail: error.message }));
 }
 
 if (wheel) {
     // Inicializa a roleta e a atualiza quando o painel salva novas configurações.
-    refreshWheelPrizes().catch((error) => {
-        spinMessage.textContent = error.message;
-        spinMessage.classList.add('error');
-    });
+    refreshWheelPrizes().catch(showPrizeLoadError);
     window.addEventListener('prizes-updated', () => {
-        refreshWheelPrizes().catch((error) => {
-            spinMessage.textContent = error.message;
-            spinMessage.classList.add('error');
-        });
+        refreshWheelPrizes().catch(showPrizeLoadError);
     });
 }
 
 async function requestSpin() {
-    // Solicita ao backend o resultado oficial (o navegador não sorteia o prêmio).
-    const response = await fetch('/api/spins/roll', {
+    // O backend sorteia o resultado demonstrativo; o navegador apenas anima.
+    const response = await fetch('/api/spins/preview', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({})
@@ -78,13 +81,12 @@ if (spinButton && wheel) {
             const rotationDelta = 360 * 6 + ((targetAngle - currentAngle + 360) % 360);
             currentRotation += rotationDelta;
             wheel.style.transform = `rotate(${currentRotation}deg)`;
-            spinMessage.textContent = `${response.result.prizeName}: ${response.result.discountPercent}% de desconto.`;
+            spinMessage.textContent = `${response.result.prizeName}: ${response.result.discountPercent}% de desconto (demonstração; sem cupom real).`;
         } catch (error) {
             spinMessage.textContent = error.message;
             spinMessage.classList.add('error');
         } finally {
             spinButton.disabled = false;
-            window.dispatchEvent(new CustomEvent('spin-attempt-finished'));
         }
     });
 }

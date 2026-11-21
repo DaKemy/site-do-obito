@@ -435,15 +435,17 @@ def pick_weighted_prize():
         raise RuntimeError('Nenhum prêmio ativo encontrado.')
 
     total_weight = sum(int(p['probability_weight']) for p in prizes)
+    if total_weight <= 0:
+        raise RuntimeError('Os prêmios ativos não têm probabilidades válidas.')
     value = secrets.randbelow(total_weight) + 1
     cursor = 0
 
-    for prize in prizes:
+    for segment_index, prize in enumerate(prizes):
         cursor += int(prize['probability_weight'])
         if value <= cursor:
-            return dict(prize)
+            return dict(prize), segment_index
 
-    return dict(prizes[0])
+    return dict(prizes[0]), 0
 
 
 # ── Recursos enviados: leitura exige sessão de cliente ou desenvolvedor. ──
@@ -469,6 +471,28 @@ def public_prizes():
     ).fetchall()
     conn.close()
     return jsonify({'prizes': [dict(prize) for prize in prizes]})
+
+
+@app.route('/api/spins/preview', methods=['POST'])
+def preview_spin():
+    """Sorteia um resultado demonstrativo sem autenticação ou gravação."""
+    try:
+        prize, segment_index = pick_weighted_prize()
+    except RuntimeError as error:
+        return jsonify({'error': str(error)}), 503
+
+    return jsonify({
+        'ok': True,
+        'preview': True,
+        'result': {
+            'prizeId': prize['id'],
+            'segmentIndex': segment_index,
+            'prizeName': prize['name'],
+            'discountPercent': float(prize['discount_percent']),
+            'tomoeLevel': int(prize['tomoe_level']),
+            'rolledAt': datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z'),
+        },
+    })
 
 
 # ── Sessão de desenvolvedor: login, validação da sessão e saída. ──
@@ -876,13 +900,14 @@ def roll_spin():
         conn.close()
         return jsonify({'error': 'Nenhuma rodada disponível.'}), 400
 
-    prize = pick_weighted_prize()
+    try:
+        prize, segment_index = pick_weighted_prize()
+    except RuntimeError as error:
+        conn.close()
+        return jsonify({'error': str(error)}), 503
     result = {
         'prizeId': prize['id'],
-        'segmentIndex': conn.execute(
-            'SELECT COUNT(*) AS segment_index FROM reward_prizes WHERE active = 1 AND id < %s',
-            (prize['id'],),
-        ).fetchone()['segment_index'],
+        'segmentIndex': segment_index,
         'prizeName': prize['name'],
         'discountPercent': float(prize['discount_percent']),
         'tomoeLevel': int(prize['tomoe_level']),

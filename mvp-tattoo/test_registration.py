@@ -10,23 +10,30 @@ import app as app_module
 
 
 class FakeCursor:
-    def __init__(self, row=None):
+    def __init__(self, row=None, rows=None):
         self.row = row
+        self.rows = rows or []
 
     def fetchone(self):
         return self.row
 
+    def fetchall(self):
+        return self.rows
+
 
 class FakeConnection:
-    def __init__(self):
+    def __init__(self, prizes=None):
         self.executions = []
         self.committed = False
         self.closed = False
+        self.prizes = prizes or []
 
     def execute(self, query, params=()):
         self.executions.append((query, params))
         if query.startswith('INSERT INTO customers'):
             return FakeCursor({'id': 42})
+        if query.startswith('SELECT * FROM reward_prizes'):
+            return FakeCursor(rows=self.prizes)
         return FakeCursor()
 
     def commit(self):
@@ -166,3 +173,30 @@ class RegistrationTests(unittest.TestCase):
             self.assertEqual(self.client.post('/api/auth/logout').status_code, 200)
             self.assertEqual(self.client.post('/api/admin/logout').status_code, 200)
             self.assertEqual(self.client.post('/api/customers/register').status_code, 410)
+
+    def test_public_preview_spins_repeatedly_without_creating_real_coupons(self):
+        prize = {
+            'id': 1,
+            'name': 'Prêmio demonstrativo',
+            'discount_percent': 10,
+            'tomoe_level': 1,
+            'probability_weight': 1,
+            'active': 1,
+        }
+        connections = [FakeConnection(prizes=[prize]) for _ in range(3)]
+
+        with patch.object(app_module, 'get_db', side_effect=connections):
+            responses = [
+                self.client.post('/api/spins/preview', json={})
+                for _ in range(3)
+            ]
+
+        for response, connection in zip(responses, connections):
+            self.assertEqual(response.status_code, 200)
+            self.assertTrue(response.get_json()['preview'])
+            self.assertEqual(response.get_json()['result']['prizeName'], prize['name'])
+            self.assertNotIn('coupon', response.get_json())
+            self.assertEqual(len(connection.executions), 1)
+            self.assertIn('SELECT * FROM reward_prizes', connection.executions[0][0])
+            self.assertFalse(connection.committed)
+            self.assertTrue(connection.closed)

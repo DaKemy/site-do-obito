@@ -25,12 +25,12 @@ orientações do projeto em `.github/copilot-instructions.md`; o prompt
 | --- | --- |
 | `index.html` | Página inicial, cadastro/login e acesso ao painel do desenvolvedor. |
 | `admin.html` | Login e painel administrativo em uma página separada. |
-| `roleta.html` | Roleta de fidelidade para clientes autenticados. |
+| `roleta.html` | Roleta pública em modo de demonstração temporário. |
 | `esqueci-senha.html` | Telas para pedir a recuperação e salvar uma senha nova. |
 | `styles.css` | Cores, tipografia, layout e adaptação para celular. |
 | `login.js` | Cadastro, login do cliente, confirmação opcional e recuperação de conta. |
-| `script.js` | Atualização visual e animação de um resultado escolhido pelo servidor. |
-| `roleta.js` | Verificação da sessão e dos giros disponíveis na página da roleta. |
+| `script.js` | Atualização visual e animação de um resultado demonstrativo escolhido pelo servidor. |
+| `roleta.js` | Mensagens de carregamento e estado da roleta demonstrativa. |
 | `admin.js` | Interface do painel exclusivo de desenvolvedor. |
 | `mvp-tattoo/app.py` | Backend Flask: API, validações, sessões, regras de fidelidade e banco PostgreSQL. |
 | `mvp-tattoo/manage_admin.py` | Criação de conta administrativa ou redefinição de senha pelo terminal. |
@@ -48,6 +48,9 @@ HTML (tela) → JavaScript (pedido HTTP) → Flask (validação e regras) → Po
   `REQUIRE_EMAIL_VERIFICATION=0` e consultar sua conta, giros e progresso.
   Depois de configurar o serviço de e-mail, a confirmação pode ser reativada
   definindo essa variável como `1`.
+- **Roleta:** temporariamente, qualquer visitante pode girar à vontade em modo
+  de demonstração. Esses giros não são gravados e não geram cupons nem descontos
+  reais. O endpoint de giros reais continua exigindo autenticação e saldo.
 - **Desenvolvedor:** entra pela catraca na página inicial. Pode administrar
   clientes, redefinir senhas e alterar os prêmios. Esse acesso é separado do
   login de cliente.
